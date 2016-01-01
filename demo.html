@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+	<head> 
+		<title>EteRNA Medicine Browser Concept</title> 
+		<link rel="stylesheet" type="text/css" href="css/jquery.layout-default.css">  <!-- 2009/03/04 -->
+		<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">          <!-- ver 1.11.4 -->
+		<link rel="stylesheet" type="text/css" href="css/eterna.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/browser.css" />
+
+		<script type="text/javascript" src="js/lib/jquery.min.js"></script>            <!-- ver 1.11.3 -->
+		<script type="text/javascript" src="js/lib/jquery-ui.min.js"></script>         <!-- ver 1.11.4 -->
+
+
+		<script type="text/javascript">
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		  ga('create', 'UA-61195744-2', 'auto');
+		  ga('send', 'pageview');
+		</script>
+	</head> 
+	<body> 
+
+		<div class="ui-layout-north ui-widget-content" style="background-color:#061a34;">
+			<!-- header logo etc, replace with <block> -->
+			<!-- drop-down menu not working for this simple copy&paste version -->
+			<div name="top-bar" style="padding-top:20px;height:75px;background-image:url(https://s3.amazonaws.com/eterna/eterna2/bg_rna.png);background-repeat:no-repeat;background-position:right -70px;clear:both;margin-left:25px;" default="use_header_right:1">
+				<div style="float: right">
+					<div name="user-login" style="margin-top:-15px;clear:both;padding-right:10px;" id="_pbid-4">
+						<div name="login" builder="BuilderLogin" id="_pbid-7">
+							<div style="margin-top: 5px; margin-bottom: 15px;">
+								<input class="dark-input" style="width: 70px; font-size: 12px; text-align: center; padding: 1px;" type="text" placeholder="username" disabled>&nbsp;&nbsp;
+								<input class="dark-input" style="width: 70px; font-size: 12px; text-align: center;" type="password" placeholder="password" disabled>&nbsp;
+								<span class="clickable" id="login" style="font-size: 12px; padding: 4px; font-weight: bolder; text-decoration: underline; color: #CCCCCC;"><strike>Log in</strike></span>&nbsp;
+								<span tag="span" class="clickable" id="register" style="font-size:12px;padding:4px;font-weight:bolder;text-decoration:underline;color:#CCCCCC;" name="block-temp-name-2"><strike>Register</strike></span>&nbsp;
+								<span class="clickable" style="font-size: 12px; color: #CCCCCC; text-align: center; padding: 4px;">
+									<a style="color: #CCCCCC;"><strike>Lost password?</strike></a>
+								</span>
+								<span class="clickable" style="font-size: 12px; color: #CCCCCC; text-align: center; padding: 4px; padding-right: 7px;">
+									<a style="color: #CCCCCC;"><strike>Facebook connect</strike></a>
+								</span>
+							</div>
+						</div>
+					</div>
+					<div name="navigation-menu" style="position:relative;z-index:10;margin-top:-10px;clear:both;float:right;padding-right:10px;" id="_pbid-5">
+						<div class="trans-panel rounded-5">
+							<div class="trans-panel-bg rounded-5"></div>
+							<ul id="HDropdown-orange-classic">
+								<li><a style="font-weight: bold; color: #fff;"><strike>Help</strike></a></li>
+								<li><a style="font-weight: bold; color: #fff;"><strike>Community</strike></a></li>
+								<li><a style="font-weight: bold; color: #fff;"><strike>Cloud Lab</strike></a></li>
+								<li><a style="font-weight: bold; color: #fff;"><strike>Puzzle</strike></a></li>
+								<li><a style="font-weight: bold; color: #fff;"><strike>Roadmap</strike></a></li>
+							</ul>
+						</div>
+					</div>
+					<div style="clear: both; height: 10px"></div>
+				</div>
+				<div name="logo" style="position:relative;float:left;margin-top:-10px;" id="_pbid-6">
+					<a style="position: relative; z-index: 0">
+						<img height="65px" src="https://s3.amazonaws.com/eterna/eterna2/tb_banner_v2_720.png">
+					</a>
+					<img style="position: absolute; z-index: -1; top: 0px; left: 0px;" src="https://s3.amazonaws.com/eterna/eterna2/logo-bubble.png">
+				</div>
+				<div class="clearer"></div>
+			</div>
+			<!-- end of <block> header -->
+		</div> 
+		
+		<div id="selections_panel" class="ui-layout-west no-scrollbar">
+			<div id="accordion-west">
+				<h3><a id="tab-panel-west-1" href="#">Lab Selection</a></h3>
+				<div>
+					<div class="trans-panel rounded-5 col-options-panel">
+						<div class="trans-panel-bg"></div>
+						<ul id="lab-info" class="ui-sortable col-option-holder" style=""></ul>
+						<div class="clearer"></div>
+						<br/>
+						<div class="green-button clickable centered rounded-5 left-panel-btn" id="lab-set-btn">Set</div>
+						<div class="purple-button clickable centered rounded-5 left-panel-btn" id="lab-reset-btn">Reset</div>
+					</div>
+				</div>
+
+				<h3><a id="tab-panel-west-2" href="#">Column Selection</a></h3>
+				<div>
+					<div class="trans-panel rounded-5 col-options-panel">
+						<div class="trans-panel-bg"></div>
+							<p>In this column, players will be able  to select which columns they want downloaded from the server.  Since the database will hold many special measurements and calculated statistics not of routine interest, this will speed up data loading time.</p>
+						</div>
+					<div class="clearer"></div>
+				</div>
+
+				<h3><a id="tab-panel-west-3" href="#">Display Selection</a></h3>
+				<div>
+					<!-- column options, copied from <block> -->
+					<div class="trans-panel rounded-5 col-options-panel">
+						<div class="trans-panel-bg"></div>
+						<span style="margin-left: 20px;">
+							<label>
+								<input type="checkbox" id="regex-toggle" style="width:25px;"/>
+								<a href="https://en.wikipedia.org/wiki/Regular_expression" target="_blank"><i>RE</i></a> search
+							</label>
+							<div class="purple-button clickable centered rounded-5 left-panel-btn" id="filter-reset-btn" style="width: 100px;">Clear Filter</div>
+						</span>
+						<div class="clearer" style="margin-bottom: 5px;"></div>
+						<div class="purple-button clickable centered rounded-5 left-panel-btn" id="sort-reset-btn" style="width: 100px;">Clear Sort</div>
+						<div class="blue-button clickable centered rounded-5 left-panel-btn" id="sele-all-btn" style="width: 100px;">Show All</div>
+						<div class="blue-button clickable centered rounded-5 left-panel-btn" id="sele-none-btn" style="width: 100px;">Hide All</div>
+						<div class="clearer" style="margin-bottom: 5px;"></div>
+						<ul id="displayed-info" class="ui-sortable col-option-holder" style=""></ul>
+					</div>
+					<div class="clearer"></div>
+				</div>
+
+				<h3><a id="tab-panel-west-4" href="#">Advanced Sorting</a></h3>
+				<div>
+					<p>There are two distinct methods of sorting.  One is to sort by column values, over one or more columns. This meted of sorting can be controlled either here or in the list view itself.</p>
+	                <p>The second type of sorting is by similarity (or dissimilarity) to a selected design.  The Flash browser implements this for one special case -- similarity in sequence, measured with the Manhatten block metric.</p>
+	                <p>The new browser will generalize this to multiple columns at once, using metrics appropriate to each column.</p>
+	                <p>It will also allow the player to define dissimilarity columns.  For example, a player might ask to see designs that are similar in predicted structure but dissimilar in the Eterna sub-scores at the top of the list. </p>
+				</div>
+			</div>
+		</div>
+
+		<div id="concept-center" class="ui-layout-center">
+			<div id="loading-dialog"></div>
+			
+			<div id="lab-red-header" class="red-header" style="font-size:20px; height:32px; margin-bottom:10px;">
+				<div id="lab-title" style="float:left; display:inline-block; margin:5px;"></div>
+				<div id="button-container" style="float:right; display:inline-block;">
+					<div class="clearer"></div>
+				</div>
+			</div>
+			<table id="center-table" style="color:#fff;">
+				<thead id="table-thead"></thead>
+			</table>
+			<h1 style="text-align:center;">
+				Loading Query...
+			</h1>
+		</div>
+
+		<div id="tabs-east" class="ui-layout-east no-padding no-scrollbar">
+			<ul class="allow-overflow">
+				<li><a href="#tab-panel-east-1">2D Structure</a></li>
+				<li><a href="#tab-panel-east-2">Switch Graph</a></li>
+				<li><a href="#tab-panel-east-3">Fluoresence Image</a></li>
+			</ul>
+			<div class="ui-layout-content ui-widget-content no-scrollbar" style="border-top: 0;">
+				<!-- Detail window, tab 1, two iframes -->
+				<div id="tab-panel-east-1" class="full-height no-padding add-scrollbar" style="background-color:#000030; color:#ccc;"></div>
+				<!-- Detail window, tab 2, two images of switch graphs -->
+				<div id="tab-panel-east-2" class="full-height no-padding add-scrollbar" style="background-color:#000030; color:#ccc;"></div>
+				<div id="tab-panel-east-3" class="full-height no-padding no-scrollbar" style="background-color:#000030; color:#ccc;"></div>
+			</div>
+		</div>
+
+		<div class="ui-layout-south ui-widget-content" style="background-color:#061a34;">
+			<!-- footer logo etc, replace with <block> -->
+			<div name="footer" style="clear:both; padding-top:17px; padding-bottom:17px; text-align:center;" id="_pbid-1">
+				<div style="font-family: 'Helvetica Neue', 'Open Sans', Arial, gulim; font-size:11px; font-weight: 300; color:#D0D0D0; padding:8px;">
+					Users agree that all user-submitted content is licensed under a <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" style="color:#ccc;">Creative Commons Attribution Non Commercial ShareAlike 4.0 International license</a>.
+				</div>
+				<img src="https://s3.amazonaws.com/eterna/eterna2/footer.png">
+			</div>
+			<!-- end of <block> footer -->
+		</div>
+
+		<!-- JS loading order matters -->
+		<script type="text/javascript" src="js/lib/layout/jquery.layout-latest.js"></script>                        <!-- ver 1.4.4  -->
+		<script type="text/javascript" src="js/lib/layout/jquery.layout.resizeTabLayout.js"></script>               <!-- ver 1.3    -->
+		<script type="text/javascript" src="js/lib/layout/jquery.layout.resizePaneAccordions.min.js"></script>      <!-- ver 1.2    -->
+
+		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.min.js"></script>                   <!-- ver 1.10.9 -->
+		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.buttons.min.js"></script>           <!-- ver 1.0.3  -->
+		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.colReorder.min.js"></script>        <!-- ver 1.2.0  -->
+		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.select.min.js"></script>            <!-- ver 1.0.1  -->
+		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.scroller.min.js"></script>          <!-- ver 1.3.0  -->
+
+		<script type="text/javascript" src="js/secstr/svg.js"></script>
+		<script type="text/javascript" src="js/secstr/render_rna.js"></script>
+		<script type="text/javascript" src="js/secstr/main.js"></script>
+
+		<script type="text/javascript" src="js/leftPanel.js"></script>
+		<script type="text/javascript" src="js/centerPanel.js"></script>
+		<script type="text/javascript" src="js/rightPanel.js"></script>
+
+		<script type="text/javascript" src="js/demo_new.js"></script>
+
+		<script type="text/javascript"> 
+			// global variables
+			var pageLayout, table;
+			var col_header, col_groups = [];
+			var lab_set = [], lab_sele = [];
+			var synthesized = [], shape_data = [], max_len = 0, n_fields = 0;
+			var lab_set_url, data_query_url;
+
+			$(document).ready(function() {
+				resizePaneAccordions	= $.layout.callbacks.resizePaneAccordions;
+				resizeTabLayout			= $.layout.callbacks.resizeTabLayout;
+
+				// OUTER/PAGE LAYOUT
+				pageLayout = $("body").layout({ // DO NOT use "var pageLayout" here
+					"north": {
+						"resizable": false,
+						"slidable": false, 
+						"togglerLength_open": 0,
+						"spacing_open": 0,
+					},
+					"west": {
+						"size": 450, 
+						"onresize": resizePaneAccordions, // west accordion a child of pane
+					},
+					"east": {
+						"size": 450, 
+						"onresize":	resize2DStructure, // east accordion nested inside a tab-panel
+					},
+					"center": {
+						"closable": false,
+						"resizable": true,
+						"spacing_open": 0,
+						"onresize": resizeCenterTable, // tabs/panels are wrapped with an inner-layout
+					}
+				}); 
+
+				// TABS INSIDE EAST-PANE
+				pageLayout.panes.east.tabs({ "activate": resizePaneAccordions }); // resize tab2-accordion when tab is activated
+				pageLayout.sizeContent("east"); // resize pane-content-elements after creating east-tabs
+
+				// INIT ALL ACCORDIONS - EVEN THOSE NOT VISIBLE
+				$("#accordion-west").accordion({ "heightStyle": "fill" });
+				$("#accordion-east").accordion({ "heightStyle": "fill" });
+				// show loading animation
+    			$("#loading-dialog").dialog({"modal": true});
+    			// remove extra borders and resize it square
+    			$(".ui-dialog > .ui-resizable-handle").remove();
+    			// have to be after dialog() call
+				$("#loading-dialog").css({"min-height": 0, "padding-top": 0});
+
+				$.ajax({
+					"dataType": "json",
+					"url": lab_set_url,
+					"success": function(data) {
+						lab_set = data["rows"];
+						initLabSet();
+						data_query_url = getDataQuery();
+					},
+					"complete": function() {
+						$.ajax({
+							"dataType": "json",
+							"url": data_query_url, 
+							"success": function(data) {
+								dataAjaxSuccess(data);
+								n_fields = Object.keys(col_header).length
+								// get group percentages in array
+								for (var i in Object.keys(col_header)) {
+								    if (col_header[i].length > 4 && col_header[i][4]) {
+								        if (col_groups.indexOf(col_header[i][4]) == -1) {
+								            col_groups.push(col_header[i][4]);
+								        }
+								    }
+								}
+								// init column options and headers according to query
+								drawColHeaders(col_header);
+								drawColOptions(col_header);
+					            $(".ui-layout-center > h1").html("Loading Table...");
+							},
+							"complete": function() {
+								// manually converting data types
+								// don't need this since the sorting takes text() of <td> regardless of source data
+								// convertTypes(col_header);
+
+								setTimeout(function() {
+									initTable();
+									$("#loading-dialog").dialog("close");
+								}, 50);
+								// apply retrieved filter when loaded.
+								setTimeout(function() {
+								    if ($("#col-filter-str-0").length) {
+								        $("#col-filter-str-0").trigger("change");
+								    } else {
+								        $("#col-filter-min-0").trigger("change");
+								    }
+								}, 200);
+							}
+						});
+					}
+				});
+			});
+		</script>
+	</body> 
+</html>

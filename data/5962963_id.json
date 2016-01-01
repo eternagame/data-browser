@@ -1,0 +1,19 @@
+{
+ "kind": "fusiontables#sqlresponse",
+ "columns": [
+  "Synthesis Round",
+  "Project ID",
+  "Project Name",
+  "Lab ID",
+  "Lab Name"
+ ],
+ "rows": [
+  [
+   "97",
+   "5962968",
+   "MS2 Riboswitches On Chip - Round 4 ",
+   "5962963",
+   "Exclusion 3"
+  ]
+ ]
+}

@@ -1,0 +1,284 @@
+<html>
+    <head>
+        <title>RNARenderer</title>
+        <script src="svg.js"></script>
+        <script src="render_rna.js"></script>
+        <script src="main.js"></script>
+
+        <style>
+            /* http://meyerweb.com/eric/tools/css/reset/ 
+               v2.0 | 20110126
+               License: none (public domain)
+            */
+
+            html, body, div, span, applet, object, iframe,
+            h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+            a, abbr, acronym, address, big, cite, code,
+            del, dfn, em, img, ins, kbd, q, s, samp,
+            small, strike, strong, sub, sup, tt, var,
+            b, u, i, center,
+            dl, dt, dd, ol, ul, li,
+            fieldset, form, label, legend,
+            table, caption, tbody, tfoot, thead, tr, th, td,
+            article, aside, canvas, details, embed, 
+            figure, figcaption, footer, header, hgroup, 
+            menu, nav, output, ruby, section, summary,
+            time, mark, audio, video {
+                margin: 0;
+                padding: 0;
+                border: 0;
+                font-size: 100%;
+                font: inherit;
+                vertical-align: baseline;
+            }
+            /* HTML5 display-role reset for older browsers */
+            article, aside, details, figcaption, figure, 
+            footer, header, hgroup, menu, nav, section {
+                display: block;
+            }
+            body {
+                line-height: 1;
+            }
+            ol, ul {
+                list-style: none;
+            }
+            blockquote, q {
+                quotes: none;
+            }
+            blockquote:before, blockquote:after,
+            q:before, q:after {
+                content: '';
+                content: none;
+            }
+            table {
+                border-collapse: collapse;
+                border-spacing: 0;
+            }
+        </style>
+
+        <style>
+
+            body {
+                font-family: 'Helvetica Neue';
+                font-weight: 300;
+            }
+
+            input[type="text"] {
+              display: block;
+              margin: 0;
+              width: 100%;
+              font-family: 'Helvetica Neue';
+              font-weight: 300;
+              font-size: 18px;
+              appearance: none;
+              box-shadow: none;
+              border-radius: none;
+            }
+
+            input[type="text"]:focus {
+              outline: none;
+            }
+
+            input[type="text"] {
+              padding: 10px;
+              border: none;
+              border-bottom: solid 2px #c9c9c9;
+              transition: border 0.3s;
+              margin-bottom: 10px;
+            }
+            
+            input[type="text"]:focus,
+            input[type="text"].focus {
+              border-bottom: solid 2px #969696;
+            }
+
+            .btn {
+                cursor: pointer;
+                -webkit-border-radius: 0;
+                -moz-border-radius: 0;
+                border-radius: 0px;
+                color: #ffffff;
+                font-size: 20px;
+                background: #3498db;
+                padding: 10px 20px 10px 20px;
+                text-decoration: none;
+                margin-bottom: 10px;
+            }
+
+            .btn:hover {
+                cursor: pointer;
+                background: #3cb0fd;
+                text-decoration: none;
+            }
+
+            input[type="checkbox"] {
+              position: absolute;
+              left: -9999px;
+            }
+
+            .checklabel {
+              display: inline-block;
+              position: relative;
+              width: 100px;
+              text-align: center;
+              padding: 12px;
+              font-family: 'Helvetica Neue';
+              font-weight: 300;
+              
+              color: #fff;
+              background-color: red;
+              white-space: nowrap;
+              cursor: pointer;
+              user-select: none;
+              transition: background-color .2s, box-shadow .2s;
+            }
+
+            input:checked + .checklabel {
+              background-color: green;
+            }
+
+            #error {
+                background-color: #EAA7A3; 
+                padding: 10px; 
+                max-width: 500px;
+            }
+
+            #error:empty { 
+                background-color: inherit;
+            }
+
+        </style>
+    </head>
+    <body>
+
+    <div class="container" style="margin: 20px;">
+        <div id="inputs" style="max-width: 500px;">
+            <input id="secstruct" type="text" placeholder="Enter secondary structure string (dot-bracket notation).">
+            <input id="sequence"  type="text" placeholder="Enter sequence string."/>
+        </div>
+
+        <input id="letters" type="checkbox"/>
+        <label class="checklabel" for="letters">Render Letters</label>
+
+        <input id="bonds" type="checkbox" checked/>
+        <label class="checklabel" for="bonds">Render Bonds</label>
+
+        <div id="download" class="btn" style="width: 150px; text-align: center; margin-top: 10px;">Download</div>
+
+        <div style="display: block;">
+        <div style="height:10px;" class="spacer"></div>
+        <div style="display: inline;"><input id="color1" type="radio" name="colorchoice" checked>Nucleotide Colors</div>
+        <div style="display: inline;"><input id="color2" type="radio" name="colorchoice">Pairing Colors (1)</div>
+        <div style="display: inline;"><input id="color3" type="radio" name="colorchoice">Pairing Colors (2)</div>
+        <div style="height:10px;" class="spacer"></div>
+        </div>
+
+        <div id="error"></div>
+
+        <div id="svgContainer" style="background-color: rgb(235, 235, 235);"></div>
+
+    </div>
+
+        <script type="text/javascript">
+
+            var cont = document.getElementById("svgContainer");
+            var seq = document.getElementById("sequence");
+            var sec = document.getElementById("secstruct");
+            var err = document.getElementById("error");
+            var let = document.getElementById("letters");
+            var bnd = document.getElementById("bonds");
+            var dl = document.getElementById("download");
+            var cl1 = document.getElementById("color1");
+            var cl2 = document.getElementById("color2");
+            var cl3 = document.getElementById("color3");
+
+            function download(filename, text) {
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', filename);
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+            }
+
+            cl1.onclick = function() {
+                COLOR_SCHEME = NUCL_COLORS;
+                tryRenderRNA();
+            }
+
+            cl2.onclick = function() {
+                COLOR_SCHEME = PAIRED_COLOR_1;
+                tryRenderRNA();
+            }
+
+            cl3.onclick = function() {
+                COLOR_SCHEME = PAIRED_COLOR_2;
+                tryRenderRNA();
+            }
+
+            let.onclick = function() {
+                RENDER_LETTERS = let.checked;
+                tryRenderRNA();
+            }
+
+            bnd.onclick = function() {
+                DRAW_PAIRS = bnd.checked;
+                tryRenderRNA();
+            }
+
+            seq.onkeydown = function( ){
+                tryRenderRNA();
+            }
+
+            seq.onpaste = function( ){
+                tryRenderRNA();
+            }
+
+            seq.oninput = function( ){
+                tryRenderRNA();
+            }
+
+            sec.onkeydown = function( ){
+                tryRenderRNA();
+            }
+
+            sec.onpaste = function( ){
+                tryRenderRNA();
+            }
+
+            sec.oninput = function( ){
+                tryRenderRNA();
+            }
+
+            dl.onclick = function() {
+                var success = tryRenderRNA();
+                if(success != -1) {
+                    download("render.svg", cont.innerHTML);
+                }
+            }
+
+            function tryRenderRNA() {
+                var seqstring = seq.value.trim();
+                var secstring = sec.value.trim();
+
+                if(secstring.length == 0) {
+                    err.innerHTML = "Error: Rendering Issue.<br /><br />No secondary structure was entered.";
+                    return -1;
+                } else if(seqstring.length == 0 && RENDER_LETTERS) {
+                    err.innerHTML = "Error: Rendering Issue.<br /><br />No sequence was inputted for rendering letters.";
+                } else if(seqstring.length != 0 && secstring.length != seqstring.length && RENDER_LETTERS) {
+                    err.innerHTML = "Error: Rendering Issue.<br /><br />The sequence is not the same length as secondary struture.";
+                    return -1; 
+                } else {
+                    err.innerHTML = ""; // Clear previous errors
+                    seqstring = seqstring == "" ? false : seqstring;
+                    renderRNA(seqstring, secstring, cont);
+                    return 0;
+                }
+
+            }
+
+        </script>
+    </body>
+</html>
