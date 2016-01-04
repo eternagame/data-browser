@@ -26,7 +26,6 @@
 		<div class="ui-layout-north ui-widget-content" style="background-color:#061a34;">
 			<!-- header logo etc, replace with <block> -->
 			<!-- drop-down menu not working for this simple copy&paste version -->
-<!-- Remove content from north panel
 			<div name="top-bar" style="padding-top:20px;height:75px;background-image:url(https://s3.amazonaws.com/eterna/eterna2/bg_rna.png);background-repeat:no-repeat;background-position:right -70px;clear:both;margin-left:25px;" default="use_header_right:1">
 				<div style="float: right">
 					<div name="user-login" style="margin-top:-15px;clear:both;padding-right:10px;" id="_pbid-4">
@@ -68,8 +67,8 @@
 				<div class="clearer"></div>
 			</div>
 			<!-- end of <block> header -->
-End of north panel content-->		
 		</div> 
+		
 		<div id="selections_panel" class="ui-layout-west no-scrollbar">
 			<div id="accordion-west">
 				<h3><a id="tab-panel-west-1" href="#">Lab Selection</a></h3>
@@ -146,14 +145,12 @@ End of north panel content-->
 			<ul class="allow-overflow">
 				<li><a href="#tab-panel-east-1">2D Structure</a></li>
 				<li><a href="#tab-panel-east-2">Switch Graph</a></li>
-				<li><a href="#tab-panel-east-3">Fluoresence Image</a></li>
 			</ul>
 			<div class="ui-layout-content ui-widget-content no-scrollbar" style="border-top: 0;">
 				<!-- Detail window, tab 1, two iframes -->
 				<div id="tab-panel-east-1" class="full-height no-padding add-scrollbar" style="background-color:#000030; color:#ccc;"></div>
 				<!-- Detail window, tab 2, two images of switch graphs -->
 				<div id="tab-panel-east-2" class="full-height no-padding add-scrollbar" style="background-color:#000030; color:#ccc;"></div>
-				<div id="tab-panel-east-3" class="full-height no-padding no-scrollbar" style="background-color:#000030; color:#ccc;"></div>
 			</div>
 		</div>
 
@@ -187,15 +184,20 @@ End of north panel content-->
 		<script type="text/javascript" src="js/centerPanel.js"></script>
 		<script type="text/javascript" src="js/rightPanel.js"></script>
 
-		<script type="text/javascript" src="js/demo_old.js"></script>
+		<script type="text/javascript" src="js/demo_new.js"></script>
 
 		<script type="text/javascript"> 
 			// global variables
 			var pageLayout, table;
-			var col_header, col_groups = [];
-			var lab_set = [], lab_sele = [];
+			var gaColumns = [];    // array of column records retrieved from server
+			var gColumnIndex = {}; // column name -> index into gaColumns;
+			var col_header = {}, col_groups = [];
+			var col_names = {};
+			var gaPuzzles = [];
+			var gPuzzleIndex = {};
+			var lab_sele = [];
 			var synthesized = [], shape_data = [], max_len = 0, n_fields = 0;
-			var lab_set_url, data_query_url;
+			var puzzle_set_url, data_query_url;
 
 			$(document).ready(function() {
 				resizePaneAccordions	= $.layout.callbacks.resizePaneAccordions;
@@ -233,57 +235,66 @@ End of north panel content-->
 				$("#accordion-west").accordion({ "heightStyle": "fill" });
 				$("#accordion-east").accordion({ "heightStyle": "fill" });
 				// show loading animation
-    			$("#loading-dialog").dialog({"modal": true});
-    			// remove extra borders and resize it square
-    			$(".ui-dialog > .ui-resizable-handle").remove();
-    			// have to be after dialog() call
+	    			$("#loading-dialog").dialog({"modal": true});
+	    			// remove extra borders and resize it square
+	    			$(".ui-dialog > .ui-resizable-handle").remove();
+	    			// have to be after dialog() call
 				$("#loading-dialog").css({"min-height": 0, "padding-top": 0});
 
 				$.ajax({
 					"dataType": "json",
-					"url": lab_set_url,
+					"url": getColumnQuery(),
 					"success": function(data) {
-						lab_set = data["rows"];
-						initLabSet();
-						data_query_url = getDataQuery();
+						normalizeColumnResponse( data );
 					},
 					"complete": function() {
 						$.ajax({
 							"dataType": "json",
-							"url": data_query_url, 
+							"url": getPuzzleQuery(),
 							"success": function(data) {
-								dataAjaxSuccess(data);
-								n_fields = Object.keys(col_header).length
-								// get group percentages in array
-								for (var i in Object.keys(col_header)) {
-								    if (col_header[i].length > 4 && col_header[i][4]) {
-								        if (col_groups.indexOf(col_header[i][4]) == -1) {
-								            col_groups.push(col_header[i][4]);
-								        }
-								    }
-								}
-								// init column options and headers according to query
-								drawColHeaders(col_header);
-								drawColOptions(col_header);
-					            $(".ui-layout-center > h1").html("Loading Table...");
+								normalizePuzzleResponse( data )
+								initLabSet();
+								data_query_url = getDataQuery();
 							},
 							"complete": function() {
-								// manually converting data types
-								// don't need this since the sorting takes text() of <td> regardless of source data
-								// convertTypes(col_header);
+								$.ajax({
+									"dataType": "json",
+									"url": data_query_url, 
+									"success": function(data) {
+										dataAjaxSuccess(data);
+										n_fields = Object.keys(col_header).length
+										// get group percentages in array
+										for (var i in Object.keys(col_header)) {
+										    if (col_header[i].length > 4 && col_header[i][4]) {
+										        if (col_groups.indexOf(col_header[i][4]) == -1) {
+									            		col_groups.push(col_header[i][4]);
+									        	}
+										    }
+										}
+										// init column options and headers according to query
+										drawColHeaders(col_header);
+										drawColOptions(col_header);
+							            		$(".ui-layout-center > h1").html("Loading Table...");
+									},
+									"complete": function() {
+										// manually converting data types
+										// don't need this since the sorting takes text() of <td> regardless of source data
+										// convertTypes(col_header);
 
-								setTimeout(function() {
-									initTable();
-									$("#loading-dialog").dialog("close");
-								}, 50);
-								// apply retrieved filter when loaded.
-								setTimeout(function() {
-								    if ($("#col-filter-str-0").length) {
-								        $("#col-filter-str-0").trigger("change");
-								    } else {
-								        $("#col-filter-min-0").trigger("change");
-								    }
-								}, 200);
+										setTimeout(function() {
+										    initTable();
+										    $("#loading-dialog").dialog("close");
+										}, 50);
+										// apply retrieved filter when loaded.
+										setTimeout(function() {
+										    if ($("#col-filter-str-0").length) {
+										        $("#col-filter-str-0").trigger("change");
+										    } else {
+										        $("#col-filter-min-0").trigger("change");
+										    }
+										}, 200);
+									}
+								});
 							}
 						});
 					}

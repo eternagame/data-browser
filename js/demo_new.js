@@ -6,29 +6,107 @@ var iframe_flag = false;
 var DEBUG = true;
 
 // hardcoded lab_id and target structures
-function getStr1(idx) { return table.row(idx).data()[table.column(".td_def_57").index()]; }
-function getStr2(idx) { return table.row(idx).data()[table.column(".td_def_58").index()]; }
+function getStr1(idx) { return table.row(idx).data()[gColumnIndex["Structure_1"]]; }
+function getStr2(idx) { return table.row(idx).data()[gColumnIndex["Structure_2"]]; }
 
-// tailored for new lab data
-var lab_set_url = "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT%20*%20FROM%201hpRtzFVXLmaIRBFk8Ca-746rE4qDPHxNdMh4CocA%20&key=AIzaSyD6cZ6iB7D1amG_DQfRjvCCXSlEeZrPiGE";
+// Fusion table IDs
+var PuzzleTableID = "1U8t1qye2beaSl70XMTDHYoDznRWeopnOt1eoJy4T";
+var ColumnTableID = "11uTF1m16NsZ0Eg5h6HJ5g6LQzDEXGkHIIyOvZPHT";
+var DataTableID   = "1kMFbEh1W-Q0GyY2CCJP1lxSWZpuspjdqDUzHMKAJ";
+
+var APIkey = "AIzaSyD6cZ6iB7D1amG_DQfRjvCCXSlEeZrPiGE";
+
+// ------------ Puzzle specification -------------------
+//
+function getPuzzleQuery(){
+    return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT * FROM " + PuzzleTableID + " &key=" + APIkey;
+}
+
+function normalizePuzzleResponse( data ) {
+    gaPuzzles = data["rows"];
+    var temp = data["columns"];
+    for (i = 0; i < temp.length; i++) {
+	gPuzzleIndex[temp[i]] = i;
+    }
+}
+
+// ------------ Column specification -------------------
+//
+function getColumnQuery() {
+    // Column_Name _must_ be first column selected.
+    return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT Column_Name,Column_Label,Siqi_sub_1,Siqi_sub_2,Siqi_sub_3,Siqi_sub_4 FROM " + ColumnTableID + " WHERE Temp = '_temp_' &key=" + APIkey;
+
+}
+
+var col_header = {};
+var col_names = {};
+
+function normalizeColumnResponse( data ) {
+    // convert fusion table results to Siqi's col_header object
+    gaColumns = data.rows;
+    for (i = 0; i < gaColumns.length; i++) {
+	gColumnIndex[gaColumns[i][0]] = i; // !!! Assumes column name is first column -- see getColumnQuery
+        col_names[parseInt(i)] = gaColumns[i][0]; 
+        col_header[parseInt(i)] = gaColumns[i].slice( 1 ); 
+    }   
+}
+
+// hardcoded function of specific columns for right-panel
+function getColNums() {
+    return {
+/*
+        "designer": table.column(".td_def_3").index(),
+        "title": table.column(".td_def_2").index(),
+        "sequence": table.column(".td_def_12").index(),
+        "id": table.column(".td_def_1").index(),
+        "round": table.column(".td_def_5").index(),
+        "description": table.column(".td_def_4").index(),
+        "score": table.column(".td_def_11").index(),
+*/
+        "designer": gColumnIndex["Designer_Name"],
+        "title": gColumnIndex["Design_Name"],
+        "sequence": gColumnIndex["Sequence_"],
+        "id": gColumnIndex["Design_ID"],
+        "round": gColumnIndex["Synthesis_Round"],
+        "description": gColumnIndex["Description_"],
+        "score": gColumnIndex["Eterna_Score"],
+        "flag": -1
+    };
+}
+
+// ------------ Data specification -------------------
+//
 // compose query of selected lab_id as WHERE Lab_ID IN (xxx, yyy)
 function getDataQuery() {
+    // Create WHERE list from lab_sele array
     var lab_ids = '';
     for (var i = 0; i < lab_sele.length; i++) {
         lab_ids += "%20%27" + lab_sele[i] + "%27%20,";
     }
     lab_ids = lab_ids.substring(0, lab_ids.length - 1);
-    return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT%20*%20FROM%201e4G5hFaoB6fcHTxBUSBLiOXmPC-L9bBB_KtocFQc%20WHERE%20%27Lab%20ID%27%20IN%20(" + lab_ids + ")%20&key=AIzaSyD6cZ6iB7D1amG_DQfRjvCCXSlEeZrPiGE";
+
+    // create SELECT list from col_names object
+    var column_selection = "*";
+    if (col_names["0"]) {
+	var tmp = [];
+	for (i in col_names) tmp[parseInt(i)] = "'" + col_names[i] + "'"; //!!! assumes column name in column 0
+	column_selection = tmp.join(",");
+    }
+    // construct URL
+
+    var dataURL =  "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT " + column_selection + " FROM " + DataTableID + " WHERE 'Puzzle_ID' IN(" + lab_ids + ") &key=" + APIkey;
+    return dataURL;
 }
 
-var col_header = {};
 function dataAjaxSuccess(data) {
     synthesized = data['rows'];
     $("#lab-title").html(data['kind']);
 
+// ------------ Obsolete -------------------
+/*
     // hardcoded filling data types
     col_header = {
-    0:  ["Lab Name",                                     "string"],
+    0:  ["Puzzle Name",                                  "string"],
     1:  ["Design ID",                                    "string"],
     2:  ["Design Name",                                  "string"],
     3:  ["Designer",                                     "string"],
@@ -101,20 +179,8 @@ function dataAjaxSuccess(data) {
     70: ["GU<i>(%)</i> <sub>Str2</sub>",                 "int"],
     71: ["Lab ID",                                       "string"]
     }
+*/
 }
 
-// hardcoded function of specific columns for right-panel
-function getColNums() {
-    return {
-        "designer": table.column(".td_def_3").index(),
-        "title": table.column(".td_def_2").index(),
-        "sequence": table.column(".td_def_12").index(),
-        "id": table.column(".td_def_1").index(),
-        "round": table.column(".td_def_5").index(),
-        "description": table.column(".td_def_4").index(),
-        "score": table.column(".td_def_11").index(),
-        "flag": -1
-    };
-}
 
 

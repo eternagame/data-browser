@@ -8,7 +8,7 @@ function fillDesignText(row, col_num) {
     html += '<div class="ui-tabs-panel outline" id="right_panel_' + row[col_num["id"]] + '" style="clear:both;">';
     html += '<p><b>' + row[col_num["title"]] + '</b> by <u>' + row[col_num["designer"]] + '</u></p>';
     html += '<p>ID: <i style="color:#fff;">' + row[col_num["id"]] + '</i>  Eterna Score: <span class="light-green-font">' + row[col_num["score"]] + '</span> <span style="color:#888">/ 100</span></p>';
-    html += '<p class="txt-hover"><i>' + row[col_num["description"]] + '</i></p>';
+    html += '<p class="txt-hover"><i>' + (col_num["description"] ? row[col_num["description"]] : '') + '</i></p>';
     return html;
 }
 
@@ -38,8 +38,10 @@ function updateSele2SecStr(ids, col_num) {
         for (var i = 0; i < ids.length; i++) {
             var row = table.row([ids[i]]).data();
             // using puzzle target SecStr instead of calculating on-the-fly
-            renderRNA(row[col_num["sequence"]].trim(), getStr1(ids[i]),  document.getElementById("svg_container_0_" + row[col_num["id"]])); 
-            renderRNA(row[col_num["sequence"]].trim(), getStr2(ids[i]),  document.getElementById("svg_container_1_" + row[col_num["id"]]));
+            if (getStr1(ids[i]))
+                renderRNA(row[col_num["sequence"]].trim(), getStr1(ids[i]),  document.getElementById("svg_container_0_" + row[col_num["id"]])); 
+            if (getStr2(ids[i]))
+                renderRNA(row[col_num["sequence"]].trim(), getStr2(ids[i]),  document.getElementById("svg_container_1_" + row[col_num["id"]]));
         }
     }
 }

@@ -383,7 +383,7 @@ function resizeCenterTable() {
     timer_center_resize = setTimeout(function() {
         if (DEBUG) { console.log("center-resize"); }
         $("div.dataTables_scrollBody").css("height", $("#concept-center").height() - $("#lab-red-header").height() - $("div.dataTables_scrollHead").height() - 40);
-        table.draw();
+        // table.draw(); // Don't want to lose scroll position 
     }, 100);
 }
 

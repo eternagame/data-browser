@@ -449,25 +449,30 @@ function initFilterInput() {
 }
 
 // generate left-panel lab selections from meta data; called once on init()
-function drawLabSetOptions(lab_set) {
+function drawLabSetOptions(gaPuzzles) {
+    var puzzleIDIndex = gPuzzleIndex['Puzzle_ID'];
+    var puzzleNameIndex = gPuzzleIndex['Puzzle_Name'];
+    var projectIDIndex = gPuzzleIndex['Project_ID'];
+    var projectNameIndex = gPuzzleIndex['Project_Name'];
+    var synthesisRoundIndex = gPuzzleIndex['Project_Name'];
     var html = "";
-    for (var i = 0; i < lab_set.length; i++) {
-        html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="lab-sele-' + lab_set[i][3] + '">';
+    for (var i = 0; i < gaPuzzles.length; i++) {
+        html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="lab-sele-' + gaPuzzles[i][3] + '">';
         html += '<div class="gray-button-bg"></div>';
-        html += '<div class="column-title"><label><input type="checkbox" id="lab-chk-' + lab_set[i][3] +'" class="col-sort-chk"/>Lab #' + lab_set[i][3] + ' : <b>' + lab_set[i][4] + '</b><span><br/><i style="text-transform:none;">Project #' + lab_set[i][1] + '</i> : <u style="text-transform:none;">' + lab_set[i][2] + '</u></span></label></div>';
-        html += '<div class="lab-sele rounded-small">R' + lab_set[i][0] + '</div>';
+        html += '<div class="column-title"><label><input type="checkbox" id="lab-chk-' + gaPuzzles[i][puzzleIDIndex] +'" class="col-sort-chk"/>Lab #' + gaPuzzles[i][puzzleIDIndex] + ' : <b>' + gaPuzzles[i][puzzleNameIndex] + '</b><span><br/><i style="text-transform:none;">Project #' + gaPuzzles[i][projectIDIndex] + '</i> : <u style="text-transform:none;">' + gaPuzzles[i][projectNameIndex] + '</u></span></label></div>';
+        html += '<div class="lab-sele rounded-small">R' + gaPuzzles[i][synthesisRoundIndex] + '</div>';
         html += '</li>';
     }
     $("#lab-info").html(html);
 
     // retrieve filters from local storage
     if (typeof(Storage) !== "undefined") {
-        for (var i = 0; i < lab_set.length; i++) {
-            if (localStorage.getItem("lab-chk-" + lab_set[i][3]) == "true") {
-                $("#lab-chk-" + lab_set[i][3]).trigger("click");
+        for (var i = 0; i < gaPuzzles.length; i++) {
+            if (localStorage.getItem("lab-chk-" + gaPuzzles[i][puzzleIDIndex]) == "true") {
+                $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).trigger("click");
                 // has to do this since events are not bind yet
-                $("#lab-chk-" + lab_set[i][3]).parent().addClass("light-green-font");
-                lab_sele.push(lab_set[i][3]);
+                $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).parent().addClass("light-green-font");
+                lab_sele.push(gaPuzzles[i][puzzleIDIndex]);
             }
         }
     }
@@ -485,7 +490,9 @@ function drawLabSetOptions(lab_set) {
 
 // initiate lef-panel lab selections
 function initLabSet() {
-    drawLabSetOptions(lab_set);
+    var puzzleIDIndex = gPuzzleIndex['Puzzle_ID'];
+
+    drawLabSetOptions(gaPuzzles);
 
     // when lab selection changes
     $("[id^='lab-chk-']").on("click", function() {
@@ -503,8 +510,8 @@ function initLabSet() {
 
         // save to localStorage
         if (typeof(Storage) !== "undefined") {
-            for (var i = 0; i < lab_set.length; i++) {
-                localStorage.setItem("lab-chk-" + lab_set[i][3], $("#lab-chk-" + lab_set[i][3]).is(":checked"));
+            for (var i = 0; i < gaPuzzles.length; i++) {
+                localStorage.setItem("lab-chk-" + gaPuzzles[i][puzzleIDIndex], $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).is(":checked"));
             }
         }
     });
