@@ -4,10 +4,14 @@
 		<title>EteRNA Medicine Browser Concept</title> 
 		<link rel="stylesheet" type="text/css" href="css/jquery.layout-default.css">  <!-- 2009/03/04 -->
 		<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">          <!-- ver 1.11.4 -->
+<!-- Can't get to play with UI Layout
+		<link rel="stylesheet" type="text/css" href="css/jquery.multiselect.css" />
+		<link rel="stylesheet" type="text/css" href="css/jquery.multiselect.filter.css" />
+-->
 		<link rel="stylesheet" type="text/css" href="css/eterna.min.css" />
 		<link rel="stylesheet" type="text/css" href="css/browser.css" />
 
-		<script type="text/javascript" src="js/lib/jquery.min.js"></script>            <!-- ver 1.11.3 -->
+		<script type="text/javascript" src="js/lib/jquery-1.12.0.js"></script>            <!-- ver 1.12.0 -->
 		<script type="text/javascript" src="js/lib/jquery-ui.min.js"></script>         <!-- ver 1.11.4 -->
 
 
@@ -71,7 +75,7 @@
 		
 		<div id="selections_panel" class="ui-layout-west no-scrollbar">
 			<div id="accordion-west">
-				<h3><a id="tab-panel-west-1" href="#">Lab Selection</a></h3>
+				<h3><a id="tab-panel-west-1" href="#">Puzzle Selectction</a></h3>
 				<div>
 					<div class="trans-panel rounded-5 col-options-panel">
 						<div class="trans-panel-bg"></div>
@@ -79,16 +83,28 @@
 						<div class="clearer"></div>
 						<br/>
 						<div class="green-button clickable centered rounded-5 left-panel-btn" id="lab-set-btn">Set</div>
-						<div class="purple-button clickable centered rounded-5 left-panel-btn" id="lab-reset-btn">Reset</div>
+						<div class="purple-button clickable centered rounded-5 left-panel-btn" id="lab-reset-btn">Clear all</div>
 					</div>
 				</div>
 
 				<h3><a id="tab-panel-west-2" href="#">Column Selection</a></h3>
 				<div>
-					<div class="trans-panel rounded-5 col-options-panel">
+					<!-- columns to download, copied from below -->
+					<div class="trans-panel rounded-5 col-download-panel">
 						<div class="trans-panel-bg"></div>
-							<p>In this column, players will be able  to select which columns they want downloaded from the server.  Since the database will hold many special measurements and calculated statistics not of routine interest, this will speed up data loading time.</p>
+						<span style="margin-left: 20px;">
+							<div class="purple-button clickable centered rounded-5 left-panel-btn" id="filter-reset-btn" style="width: 100px;">Clear Filter</div>
+						</span>
+						<div class="clearer" style="margin-bottom: 5px;"></div>
+
+						<div class="clearer" style="margin-bottom: 5px;"></div>
+						<ul id="column-info" class="ui-sortable col-option-holder" style=""></ul>  <!-- //removed col-option-holder class and displayed-info id-->
+					</div>
+<!--
+							<select id="Columns" title="Columns" multiple="multiple" name="columns" size="20">
+							</select>
 						</div>
+-->
 					<div class="clearer"></div>
 				</div>
 
@@ -170,17 +186,24 @@
 		<script type="text/javascript" src="js/lib/layout/jquery.layout.resizeTabLayout.js"></script>               <!-- ver 1.3    -->
 		<script type="text/javascript" src="js/lib/layout/jquery.layout.resizePaneAccordions.min.js"></script>      <!-- ver 1.2    -->
 
-		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.min.js"></script>                   <!-- ver 1.10.9 -->
+<!--		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.min.js"></script>         -->       <!-- ver 1.10.9 -->
+		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.js"></script>                       <!-- ver 1.10.10 -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.buttons.min.js"></script>           <!-- ver 1.0.3  -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.colReorder.min.js"></script>        <!-- ver 1.2.0  -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.select.min.js"></script>            <!-- ver 1.0.1  -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.scroller.min.js"></script>          <!-- ver 1.3.0  -->
+
+<!-- Can't get to play with UI Layout
+		<script type="text/javascript" src="js/lib/multiselect/jquery.multiselect.js"></script>            <!-- ver 1.0.1  -->
+		<script type="text/javascript" src="js/lib/multiselect/jquery.multiselect.filter.js"></script>          <!-- ver 1.3.0  -->
+-->
 
 		<script type="text/javascript" src="js/secstr/svg.js"></script>
 		<script type="text/javascript" src="js/secstr/render_rna.js"></script>
 		<script type="text/javascript" src="js/secstr/main.js"></script>
 
 		<script type="text/javascript" src="js/leftPanel.js"></script>
+		<script type="text/javascript" src="js/columnSelection.js"></script>
 		<script type="text/javascript" src="js/centerPanel.js"></script>
 		<script type="text/javascript" src="js/rightPanel.js"></script>
 
@@ -191,13 +214,17 @@
 			var pageLayout, table;
 			var gaColumns = [];    // array of column records retrieved from server
 			var gColumnIndex = {}; // column name -> index into gaColumns;
-			var col_header = {}, col_groups = [];
+			var columnNameIndex = -1;
+
+			var gaColumnsToDownload = [];
+			var columnSpecification = {}, col_groups = [];
 			var col_names = {};
 			var gaPuzzles = [];
 			var gPuzzleIndex = {};
-			var lab_sele = [];
+			var gaSelectedPuzzles = [];
 			var synthesized = [], shape_data = [], max_len = 0, n_fields = 0;
-			var puzzle_set_url, data_query_url;
+			var puzzle_set_url;
+			var tableNotLoaded = true;
 
 			$(document).ready(function() {
 				resizePaneAccordions	= $.layout.callbacks.resizePaneAccordions;
@@ -213,7 +240,7 @@
 					},
 					"west": {
 						"size": 450, 
-						"onresize": resizePaneAccordions, // west accordion a child of pane
+						"onresize": resizePaneAccordions, // west accordion a child of pane,
 					},
 					"east": {
 						"size": 450, 
@@ -241,64 +268,8 @@
 	    			// have to be after dialog() call
 				$("#loading-dialog").css({"min-height": 0, "padding-top": 0});
 
-				$.ajax({
-					"dataType": "json",
-					"url": getColumnQuery(),
-					"success": function(data) {
-						normalizeColumnResponse( data );
-					},
-					"complete": function() {
-						$.ajax({
-							"dataType": "json",
-							"url": getPuzzleQuery(),
-							"success": function(data) {
-								normalizePuzzleResponse( data )
-								initLabSet();
-								data_query_url = getDataQuery();
-							},
-							"complete": function() {
-								$.ajax({
-									"dataType": "json",
-									"url": data_query_url, 
-									"success": function(data) {
-										dataAjaxSuccess(data);
-										n_fields = Object.keys(col_header).length
-										// get group percentages in array
-										for (var i in Object.keys(col_header)) {
-										    if (col_header[i].length > 4 && col_header[i][4]) {
-										        if (col_groups.indexOf(col_header[i][4]) == -1) {
-									            		col_groups.push(col_header[i][4]);
-									        	}
-										    }
-										}
-										// init column options and headers according to query
-										drawColHeaders(col_header);
-										drawColOptions(col_header);
-							            		$(".ui-layout-center > h1").html("Loading Table...");
-									},
-									"complete": function() {
-										// manually converting data types
-										// don't need this since the sorting takes text() of <td> regardless of source data
-										// convertTypes(col_header);
-
-										setTimeout(function() {
-										    initTable();
-										    $("#loading-dialog").dialog("close");
-										}, 50);
-										// apply retrieved filter when loaded.
-										setTimeout(function() {
-										    if ($("#col-filter-str-0").length) {
-										        $("#col-filter-str-0").trigger("change");
-										    } else {
-										        $("#col-filter-min-0").trigger("change");
-										    }
-										}, 200);
-									}
-								});
-							}
-						});
-					}
-				});
+				// Query for available puzzles
+				fetchAllData();
 			});
 		</script>
 	</body> 

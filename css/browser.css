@@ -187,7 +187,8 @@ input:disabled {
 
 /* some color class */
 .light-green-font {
-	color: #4cbb17;
+	/* color: #4cbb17; */
+	color: #00ff00;
 }
 .orange-font {
 	color: #ff912e;

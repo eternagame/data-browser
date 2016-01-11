@@ -1,0 +1,74 @@
+    // --- Column selection ---------------
+function fillColumns() {
+    var columns = gaColumns.map ( function (item, index){ return item[1] })
+
+    updateOptions( "#Columns", columns );
+
+}
+
+
+
+
+    // --- General multiselect ---
+
+    $(function(){
+	$("select").multiselect({
+            //autoOpen: true,
+            selectedList: 10,
+            noneSelectedText: '(click to filter)',
+            click: onClick
+        }).multiselectfilter();
+    });
+
+    function onClick( event, UI ){
+      //alert(JSON.stringify($("#Rounds").multiselect("getChecked")));
+    }
+
+    function updateOptions( selector, sourceArray ) {
+      // get the selection
+      var element = $(selector);
+      // clear all options
+      element.empty();
+      // add the current ones back
+      for (i = 0; i < sourceArray.length; i++) element.append( "<option value='"  + sourceArray[i] + "'>" + sourceArray[i] + "</option>" );
+      // refresh the DOM 
+      element.multiselect("refresh");
+    }
+
+/*
+    (function sizeColumnSelections () {
+        $(".ui-multiselect").width("90%"); //resizes "buttons", but not exactly as expected.
+        $(".ui-multiselect-menu").width($(".ui-multiselect").width());
+        $(".ui-multiselect-header").width("100%");
+        $(".ui-helper-reset").width("100%");
+    })();
+
+
+    //$("#selections_panel").resize( sizeColumnSelections );
+
+    function sizeColumnSelections () {
+        $(".ui-multiselect").width("90%"); //resizes "buttons", but not exactly as expected.
+        $(".ui-multiselect-menu").width($(".ui-multiselect").width());
+        $(".ui-multiselect-header").width("100%");
+        $(".ui-helper-reset").width("100%");
+    }
+    sizeColumnSelections ();
+ 
+*/
+
+    function updateAllOptions() {
+      if (!bInitialQueryComplete) {
+          setTimeout(function(){ updateAllOptions(); },200);
+          return;
+      }
+      updateOptions( "#Rounds", aSynthesisRounds );
+      updateOptions( "#Projects", aProjectNames );
+      updateOptions( "#Puzzles", aPuzzleNames );
+    }
+
+    
+    $( document ).ready( updateAllOptions )
+
+
+
+

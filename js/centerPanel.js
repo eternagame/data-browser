@@ -90,11 +90,11 @@ function drawSeqRuler() {
 }
 
 // generate column <th> based on meta data; called once on init()
-function drawColHeaders(col_header) {
+function drawColHeaders(columnSpecification) {
     var html_1 = "<tr>", html_2 = "<tr>";
     // for field names of two words, wrap it into two lines
     for (var i = 0; i < n_fields; i++) {
-        var col = col_header[i][0];
+        var col = columnSpecification[i][0];
         if (col.indexOf(" ") != -1 && col.toLowerCase() != "sequence") {
             html_1 += '<th class="th_def_' + i + '">' + col.substring(0, col.indexOf(" ")) + '</th>';
             html_2 += '<th>' + col.substring(col.indexOf(" ") + 1, col.length) + '</th>';
@@ -110,10 +110,10 @@ function drawColHeaders(col_header) {
 }
 
 // correct data types based on header meta; currently not called
-function convertTypes(col_header) {
+function convertTypes(columnSpecification) {
 	for (var i = 0; i < synthesized.length; i++) {
 		for (var j = 0; j < synthesized[i].length; j++) {
-			if (col_header[j][1] != "string" && typeof(synthesized[i][j]) != col_header[j][1]) {
+			if (columnSpecification[j][1] != "string" && typeof(synthesized[i][j]) != columnSpecification[j][1]) {
 				synthesized[i][j] = Number(synthesized[i][j]);
 			}
 		}
@@ -141,21 +141,21 @@ function initColClass() {
 
 	var obj = [];
 	for (var i = 0; i < n_fields; i++) {
-		var col_type = col_header[i][1];
+		var col_type = columnSpecification[i][1];
         // internally reference columns as td_def_*, 0-indexed
         var class_name = "td_def_" + i;
         // add to-be-colored group class name
-        if (col_header[i].length > 3 && col_header[i][3]) {
-            if (isNaN(parseInt(col_header[i][3]))) {
-                class_name += ' ' + col_header[i][3];
+        if (columnSpecification[i].length > 3 && columnSpecification[i][3]) {
+            if (isNaN(parseInt(columnSpecification[i][3]))) {
+                class_name += ' ' + columnSpecification[i][3];
             } else {
-                class_name += ' to-be-colored-' + col_header[i][3];
-                if (col_header[i][3] == i) { class_name += ' master'; }
+                class_name += ' to-be-colored-' + columnSpecification[i][3];
+                if (columnSpecification[i][3] == i) { class_name += ' master'; }
             }
         }
         // add group-percentage- group class name
-        if (col_header[i].length > 4 && col_header[i][4]) {
-            class_name += ' group-percentage-' + col_header[i][4];
+        if (columnSpecification[i].length > 4 && columnSpecification[i][4]) {
+            class_name += ' group-percentage-' + columnSpecification[i][4];
         }
 
         // format for numeric columns
@@ -172,14 +172,16 @@ function initColClass() {
 function initColRender() {
     var obj = [];
     for (var i = 0; i < n_fields; i++) {
-        var col_type = col_header[i][1];
+        var col_type = columnSpecification[i][1];
 
         // special rendering for "Sequence" column (nucleotide coloring)
-        if (col_header[i].length > 3 && col_header[i][3] == "sequence") {
+        if (columnSpecification[i].length > 3 && columnSpecification[i][3] == "sequence") {
             obj.push({
                 "targets": "th_def_" + i, 
                 "render": function(data, type, row, meta) {
                     var html = '';
+		    if (!data)
+			data = ""; //!!!
                     for (var i = 0; i < data.length; i++) {
                         var nt = data.substring(i, i+1);
                         if ((i + 1) % 5 == 0) {
@@ -205,15 +207,15 @@ function initColRender() {
                         var idx = meta['col'];
                         idx = table.colReorder.order()[idx];
                         // round float to 2 decimals
-                        if (col_header[idx][1] == 'float') {
+                        if (columnSpecification[idx][1] == 'float') {
                             data = parseFloat(data).toFixed(2);
                         } else {
                             data = parseInt(data);
                         }
                         // add suffix string in gray if exists
                         var suffix = '';
-                        if (col_header[idx].length > 2 && col_header[idx][2].length) {
-                            suffix = ' <i style="color:#888;">' + col_header[idx][2] + '</i>';
+                        if (columnSpecification[idx].length > 2 && columnSpecification[idx][2].length) {
+                            suffix = ' <i style="color:#888;">' + columnSpecification[idx][2] + '</i>';
                         }
                         return '<span class="td-num">' + data + suffix + '&nbsp;&nbsp;</span>';
                     } 
@@ -228,8 +230,8 @@ function initColRender() {
                         var idx = meta['col'];
                         idx = table.colReorder.order()[idx];
                         var suffix = '';
-                        if (col_header[idx].length > 2 && col_header[idx][2].length) {
-                            suffix = ' <i style="color:#888;">' + col_header[idx][2] + '</i>';
+                        if (columnSpecification[idx].length > 2 && columnSpecification[idx][2].length) {
+                            suffix = ' <i style="color:#888;">' + columnSpecification[idx][2] + '</i>';
                         }
                         // truncate text and enable expand-when-hover, controlled by CSS
                         return '<p class="txt-hover">' + data + suffix + '</p>';
@@ -387,3 +389,71 @@ function resizeCenterTable() {
     }, 100);
 }
 
+
+function fetchAllData()
+{
+				$.ajax({
+					"dataType": "json",
+					"url": getPuzzleQuery(),
+					"success": function(data) {
+						normalizePuzzleResponse( data )
+						initPuzzleSelections();
+					},
+					"complete": function() {
+						// Query for columns present in selected puzzles
+						$.ajax({
+							"dataType": "json",
+							"url": getColumnQuery(),
+							"success": function(data) {
+								normalizeColumnResponse( data );
+								fillColumns();
+								initColumnSelections();
+							},
+							"complete": function() {
+								// Query for data in the selected puzzles/columns 
+								$.ajax({
+									"dataType": "json",
+									"url": getDataQuery(),
+									"success": function(data) {
+										dataAjaxSuccess(data);
+										n_fields = Object.keys(columnSpecification).length
+										// get group percentages in array
+										for (var i in Object.keys(columnSpecification)) {
+										    if (columnSpecification[i].length > 4 && columnSpecification[i][4]) {
+										        if (col_groups.indexOf(columnSpecification[i][4]) == -1) {
+									            		col_groups.push(columnSpecification[i][4]);
+									        	}
+										    }
+										}
+										// init column options and headers according to query
+										drawColDisplayOptions(columnSpecification);
+										drawColHeaders(columnSpecification);
+										$(".ui-layout-center > h1").html("Loading Table...");
+									},
+									"complete": function() {
+										// manually converting data types
+										// don't need this since the sorting takes text() of <td> regardless of source data
+										// convertTypes(columnSpecification);
+
+										if (tableNotLoaded)
+										    setTimeout(function() {
+										         initTable();
+										         $("#loading-dialog").dialog("close");
+										         tableNotLoaded = false;                          
+										    }, 50);
+										// apply retrieved filter when loaded.
+										setTimeout(function() {
+										    if ($("#col-filter-str-0").length) {
+										        $("#col-filter-str-0").trigger("change");
+										    } else {
+										        $("#col-filter-min-0").trigger("change");
+										    }
+										}, 200);
+									}
+								});
+							}
+						});
+					}
+				});
+
+}

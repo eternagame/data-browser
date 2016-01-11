@@ -54,7 +54,7 @@ function updateColOrderTable2Opt() {
     for (var i = 0; i < n_fields; i++) {
         html += $("#col-opt-" + new_order[i].toString())[0].outerHTML;
         // retain filter input val() for newly created DOM elements
-        if (col_header[i][1] == "int" || col_header[i][1] == "float") {
+        if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
             old_filter.push([parseFloat($("#col-filter-min-" + i).val()), parseFloat($("#col-filter-max-" + i).val())]);
         } else {
             old_filter.push([$("#col-filter-str-" + i).val()]);
@@ -66,7 +66,7 @@ function updateColOrderTable2Opt() {
 
     // restore filter inputs
     for (var i = 0; i < n_fields; i++) {
-        if (col_header[i][1] == "int" || col_header[i][1] == "float") {
+        if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
             $("#col-filter-min-" + i).val(old_filter[i][0]);
             $("#col-filter-max-" + i).val(old_filter[i][1]);
         } else {
@@ -203,7 +203,7 @@ function bindOptBlockEvent() {
         timer_col_filter_keyup = setTimeout(function() {
             filter_inputs = [];
             for (var i = 0; i < n_fields; i++) {
-                if (col_header[i][1] == "int" || col_header[i][1] == "float") {
+                if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
                     // exclude disabled filters
                     if ($("#col-filter-min-" + i).is(":disabled")) { continue; }
                     var min = parseFloat($("#col-filter-min-" + i).val());
@@ -240,7 +240,7 @@ function bindOptBlockEvent() {
         // store filters in local storage
         if (typeof(Storage) !== "undefined") {
             for (var i = 0; i < n_fields; i++) {
-                if (col_header[i][1] == "int" || col_header[i][1] == "float") {
+                if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
                     localStorage.setItem("col-filter-min-" + i, parseFloat($("#col-filter-min-" + i).val()));
                     localStorage.setItem("col-filter-max-" + i, parseFloat($("#col-filter-max-" + i).val()));
                 } else {
@@ -252,14 +252,14 @@ function bindOptBlockEvent() {
     });
 }
 
-// generate left-panel column options from meta data; called once on init()
-function drawColOptions(col_header) {
+// generate left-panel column display options from meta data; called once on init()
+function drawColDisplayOptions(columnSpecification) {
     var html = "";
     for (var i = 0; i < n_fields; i++) {
         html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="col-opt-' + i + '">';
         html += '<div class="gray-button-bg"></div>';
-        html += '<div class="column-title"><label><input type="checkbox" id="col-sort-chk-' + i +'" class="col-sort-chk"/>' + col_header[i][0] + '</label><span style="float:right;">';
-        if (col_header[i][1] == "int" || col_header[i][1] == "float") {
+        html += '<div class="column-title"><label><input type="checkbox" id="col-sort-chk-' + i +'" class="col-sort-chk"/>' + columnSpecification[i][0] + '</label><span style="float:right;">';
+        if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
             html += '<input id="col-filter-min-' + i + '" type="number" placeholder="min" class="col-filter-num">&nbsp;&nbsp;<input id="col-filter-max-' + i + '" type="number" placeholder="max" class="col-filter-num"/>';
         } else {
             html += '<input id="col-filter-str-' + i + '" type="text" placeholder="" class="col-filter-txt"/>';
@@ -271,7 +271,7 @@ function drawColOptions(col_header) {
     // retrieve filters from local storage
     if (typeof(Storage) !== "undefined") {
         for (var i = 0; i < n_fields; i++) {
-            if (col_header[i][1] == "int" || col_header[i][1] == "float") {
+            if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
                 $("#col-filter-min-" + i).val(localStorage.getItem("col-filter-min-" + i));
                 $("#col-filter-max-" + i).val(localStorage.getItem("col-filter-max-" + i));
             } else {
@@ -395,7 +395,7 @@ function initFilterInput() {
         var flag = true;
         for (var i = 0; i < filter_inputs.length; i++) {
             var idx = filter_inputs[i][0];
-            if (col_header[idx][1] == "int" || col_header[idx][1] == "float") {
+            if (columnSpecification[idx][1] == "int" || columnSpecification[idx][1] == "float") {
                 var min = filter_inputs[i][1];
                 var max = filter_inputs[i][2];
                 var num = extractNumCell(data[table.column(".td_def_" + idx).index()]);
@@ -448,18 +448,18 @@ function initFilterInput() {
     }
 }
 
-// generate left-panel lab selections from meta data; called once on init()
-function drawLabSetOptions(gaPuzzles) {
+// generate left-panel puzzle selections from meta data; called once on init()
+function drawPuzzleSetOptions(gaPuzzles) {
     var puzzleIDIndex = gPuzzleIndex['Puzzle_ID'];
     var puzzleNameIndex = gPuzzleIndex['Puzzle_Name'];
     var projectIDIndex = gPuzzleIndex['Project_ID'];
     var projectNameIndex = gPuzzleIndex['Project_Name'];
-    var synthesisRoundIndex = gPuzzleIndex['Project_Name'];
+    var synthesisRoundIndex = gPuzzleIndex['Synthesis_Round'];
     var html = "";
     for (var i = 0; i < gaPuzzles.length; i++) {
         html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="lab-sele-' + gaPuzzles[i][3] + '">';
         html += '<div class="gray-button-bg"></div>';
-        html += '<div class="column-title"><label><input type="checkbox" id="lab-chk-' + gaPuzzles[i][puzzleIDIndex] +'" class="col-sort-chk"/>Lab #' + gaPuzzles[i][puzzleIDIndex] + ' : <b>' + gaPuzzles[i][puzzleNameIndex] + '</b><span><br/><i style="text-transform:none;">Project #' + gaPuzzles[i][projectIDIndex] + '</i> : <u style="text-transform:none;">' + gaPuzzles[i][projectNameIndex] + '</u></span></label></div>';
+        html += '<div class="column-title"><label><input type="checkbox" id="lab-chk-' + gaPuzzles[i][puzzleIDIndex] +'" class="col-sort-chk"/><b>' + gaPuzzles[i][puzzleNameIndex] + '</b><span><br/><i style="text-transform:none;">Project</i> : <u style="text-transform:none;">' + gaPuzzles[i][projectNameIndex] + '</u></span></label></div>';
         html += '<div class="lab-sele rounded-small">R' + gaPuzzles[i][synthesisRoundIndex] + '</div>';
         html += '</li>';
     }
@@ -472,15 +472,15 @@ function drawLabSetOptions(gaPuzzles) {
                 $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).trigger("click");
                 // has to do this since events are not bind yet
                 $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).parent().addClass("light-green-font");
-                lab_sele.push(gaPuzzles[i][puzzleIDIndex]);
+                gaSelectedPuzzles.push(gaPuzzles[i][puzzleIDIndex]);
             }
         }
     }
     // if no lab_id selected, by default load the last lab only
-    if (typeof(Storage) == "undefined" || !lab_sele.length) {
+    if (typeof(Storage) == "undefined" || !gaSelectedPuzzles.length) {
         var id = $("[id^='lab-chk-']").last().attr("id");
         id = id.substring(id.lastIndexOf("-") + 1, id.length);
-        lab_sele.push(id);
+        gaSelectedPuzzles.push(id);
 
         $("[id^='lab-chk-']").last().trigger("click");
         // has to do this since events are not bind yet
@@ -488,13 +488,13 @@ function drawLabSetOptions(gaPuzzles) {
     }
 }
 
-// initiate lef-panel lab selections
-function initLabSet() {
+// initiate left-panel puzzle selections
+function initPuzzleSelections() {
     var puzzleIDIndex = gPuzzleIndex['Puzzle_ID'];
 
-    drawLabSetOptions(gaPuzzles);
+    drawPuzzleSetOptions(gaPuzzles);
 
-    // when lab selection changes
+    // when puzzle selection changes
     $("[id^='lab-chk-']").on("click", function() {
         var id = $(this).attr("id");
         id = id.substring(id.lastIndexOf("-") + 1, id.length);
@@ -502,10 +502,10 @@ function initLabSet() {
         // render color change green/gray
         if ($(this).is(":checked")) {
             $(this).parent().addClass("light-green-font");
-            lab_sele.push(id);
+            gaSelectedPuzzles.push(id);
         } else {
             $(this).parent().removeClass("light-green-font");
-            lab_sele.splice(lab_sele.indexOf(id), 1);
+            gaSelectedPuzzles.splice(gaSelectedPuzzles.indexOf(id), 1);
         }
 
         // save to localStorage
@@ -526,12 +526,13 @@ function initLabSet() {
     $("[id^='lab-sele-'] > .column-title > label > span").hide();
 
     // refresh page based on new lab selection
-    // new selection is saved in localStorage, upon refresh, it retrieves the info and save as lab_sele, then compose the data query
+    // new selection is saved in localStorage, upon refresh, it retrieves the info and save as gaSelectedPuzzles, then compose the data query
     $("#lab-set-btn").on("click", function() {
-        if (lab_sele.length) {
+        if (gaSelectedPuzzles.length) {
             $("#loading-dialog").dialog("open");
             $("#loading-dialog").css({"min-height": 0, "padding-top": 0});
             location.reload();
+            //fetchAllData();
         } else {
             table.clear().draw();
         }
