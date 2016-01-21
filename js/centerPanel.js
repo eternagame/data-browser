@@ -93,8 +93,10 @@ function drawSeqRuler() {
 function drawColHeaders(columnSpecification) {
     var html_1 = "<tr>", html_2 = "<tr>";
     // for field names of two words, wrap it into two lines
+    // for (var i = 0; i < n_fields; i++) {
     for (var i = 0; i < n_fields; i++) {
-        var col = columnSpecification[i][0];
+        var iSpec = gColumnIndex[gaDownloadedColumns[i]];
+        var col = columnSpecification[iSpec][0];
         if (col.indexOf(" ") != -1 && col.toLowerCase() != "sequence") {
             html_1 += '<th class="th_def_' + i + '">' + col.substring(0, col.indexOf(" ")) + '</th>';
             html_2 += '<th>' + col.substring(col.indexOf(" ") + 1, col.length) + '</th>';
@@ -111,10 +113,10 @@ function drawColHeaders(columnSpecification) {
 
 // correct data types based on header meta; currently not called
 function convertTypes(columnSpecification) {
-	for (var i = 0; i < synthesized.length; i++) {
-		for (var j = 0; j < synthesized[i].length; j++) {
-			if (columnSpecification[j][1] != "string" && typeof(synthesized[i][j]) != columnSpecification[j][1]) {
-				synthesized[i][j] = Number(synthesized[i][j]);
+	for (var i = 0; i < gTableData.length; i++) {
+		for (var j = 0; j < gTableData[i].length; j++) {
+			if (columnSpecification[j][1] != "string" && typeof(gTableData[i][j]) != columnSpecification[j][1]) {
+				gTableData[i][j] = Number(gTableData[i][j]);
 			}
 		}
 	}
@@ -139,31 +141,33 @@ function initColClass() {
     // "xxx-pre" is recognizied for "xxx" in column.type
     $.fn.dataTable.ext.type.order["num-filtered-pre"] = function ( d ) { return extractNumCell(d); };
 
-	var obj = [];
-	for (var i = 0; i < n_fields; i++) {
-		var col_type = columnSpecification[i][1];
-        // internally reference columns as td_def_*, 0-indexed
-        var class_name = "td_def_" + i;
-        // add to-be-colored group class name
-        if (columnSpecification[i].length > 3 && columnSpecification[i][3]) {
-            if (isNaN(parseInt(columnSpecification[i][3]))) {
-                class_name += ' ' + columnSpecification[i][3];
-            } else {
-                class_name += ' to-be-colored-' + columnSpecification[i][3];
-                if (columnSpecification[i][3] == i) { class_name += ' master'; }
-            }
-        }
-        // add group-percentage- group class name
-        if (columnSpecification[i].length > 4 && columnSpecification[i][4]) {
-            class_name += ' group-percentage-' + columnSpecification[i][4];
-        }
+        var obj = [];
 
-        // format for numeric columns
-        if (col_type == "int" || col_type == "float") {
-            obj.push({"className": class_name, "type": "num-filtered"});
-        } else {
-            obj.push({"className": class_name, "type": "string"});
-        }            
+        for (var i = 0; i < n_fields; i++) {
+            var iSpec = gColumnIndex[gaDownloadedColumns[i]];
+            var col_type = columnSpecification[iSpec][1];
+            // internally reference columns as td_def_*, 0-indexed
+            var class_name = "td_def_" + i;
+            // add to-be-colored group class name
+            if (columnSpecification[iSpec].length > 3 && columnSpecification[iSpec][3]) {
+                if (isNaN(parseInt(columnSpecification[iSpec][3]))) {
+                    class_name += ' ' + columnSpecification[iSpec][3];
+                } else {
+                    class_name += ' to-be-colored-' + columnSpecification[iSpec][3];
+                    if (columnSpecification[iSpec][3] == i) { class_name += ' master'; }
+                }
+            }
+            // add group-percentage- group class name
+            if (columnSpecification[i].length > 4 && columnSpecification[iSpec][4]) {
+                class_name += ' group-percentage-' + columnSpecification[iSpec][4];
+            }
+
+            // format for numeric columns
+            if (col_type == "int" || col_type == "float") {
+                obj.push({"className": class_name, "type": "num-filtered"});
+            } else {
+                obj.push({"className": class_name, "type": "string"});
+            }            
 	}
 	return obj;
 }
@@ -172,16 +176,15 @@ function initColClass() {
 function initColRender() {
     var obj = [];
     for (var i = 0; i < n_fields; i++) {
-        var col_type = columnSpecification[i][1];
+        var iSpec = gColumnIndex[gaDownloadedColumns[i]];
+        var col_type = columnSpecification[iSpec][1];
 
         // special rendering for "Sequence" column (nucleotide coloring)
-        if (columnSpecification[i].length > 3 && columnSpecification[i][3] == "sequence") {
+        if (columnSpecification[iSpec].length > 3 && columnSpecification[iSpec][3] == "sequence") {
             obj.push({
                 "targets": "th_def_" + i, 
                 "render": function(data, type, row, meta) {
                     var html = '';
-		    if (!data)
-			data = ""; //!!!
                     for (var i = 0; i < data.length; i++) {
                         var nt = data.substring(i, i+1);
                         if ((i + 1) % 5 == 0) {
@@ -200,22 +203,21 @@ function initColRender() {
             if (col_type == "int" || col_type == "float") {
                 obj.push({
                     "targets": "th_def_" + i, 
-                    "render": function(data, type, row, meta) {
+                    "render": function(data, type, row, meta) {  // Lot of repeated calculation; can some of this calculation be moved out of this per-cell call?
                         // for when first table init, variable "table" not assigned yet
                         if(typeof table === 'undefined') { table = $("#center-table").DataTable(); };
-
-                        var idx = meta['col'];
-                        idx = table.colReorder.order()[idx];
+                        var idx = table.colReorder.order()[meta['col']];	
+                        var iSpec = gColumnIndex[gaDownloadedColumns[idx]];
                         // round float to 2 decimals
-                        if (columnSpecification[idx][1] == 'float') {
+                        if (columnSpecification[iSpec][1] == 'float') {
                             data = parseFloat(data).toFixed(2);
                         } else {
                             data = parseInt(data);
                         }
                         // add suffix string in gray if exists
                         var suffix = '';
-                        if (columnSpecification[idx].length > 2 && columnSpecification[idx][2].length) {
-                            suffix = ' <i style="color:#888;">' + columnSpecification[idx][2] + '</i>';
+                        if (columnSpecification[iSpec].length > 2 && columnSpecification[iSpec][2].length) {
+                            suffix = ' <i style="color:#888;">' + columnSpecification[iSpec][2] + '</i>';
                         }
                         return '<span class="td-num">' + data + suffix + '&nbsp;&nbsp;</span>';
                     } 
@@ -227,11 +229,12 @@ function initColRender() {
                         // for when first table init, variable "table" not assigned yet
                         if(typeof table === 'undefined') { table = $("#center-table").DataTable(); };
 
-                        var idx = meta['col'];
+                        var idx = meta['col']; // i.e. DataTable's column index 
                         idx = table.colReorder.order()[idx];
+                        var iSpec = gColumnIndex[gaDownloadedColumns[idx]];
                         var suffix = '';
-                        if (columnSpecification[idx].length > 2 && columnSpecification[idx][2].length) {
-                            suffix = ' <i style="color:#888;">' + columnSpecification[idx][2] + '</i>';
+                        if (columnSpecification[iSpec].length > 2 && columnSpecification[iSpec][2].length) {
+                            suffix = ' <i style="color:#888;">' + columnSpecification[iSpec][2] + '</i>';
                         }
                         // truncate text and enable expand-when-hover, controlled by CSS
                         return '<p class="txt-hover">' + data + suffix + '</p>';
@@ -247,7 +250,7 @@ function initColRender() {
 // main function for drawing the DataTable
 function initTable() {
     $("#center-table").DataTable({
-        "data": synthesized,
+        "data": gTableData,
         "dom": 'BRC<"clear">rt',
         "processing": true,
         "sortCellsTop": true,
@@ -392,68 +395,109 @@ function resizeCenterTable() {
 
 function fetchAllData()
 {
-				$.ajax({
-					"dataType": "json",
-					"url": getPuzzleQuery(),
-					"success": function(data) {
-						normalizePuzzleResponse( data )
-						initPuzzleSelections();
-					},
-					"complete": function() {
-						// Query for columns present in selected puzzles
-						$.ajax({
-							"dataType": "json",
-							"url": getColumnQuery(),
-							"success": function(data) {
-								normalizeColumnResponse( data );
-								fillColumns();
-								initColumnSelections();
-							},
-							"complete": function() {
-								// Query for data in the selected puzzles/columns 
-								$.ajax({
-									"dataType": "json",
-									"url": getDataQuery(),
-									"success": function(data) {
-										dataAjaxSuccess(data);
-										n_fields = Object.keys(columnSpecification).length
-										// get group percentages in array
-										for (var i in Object.keys(columnSpecification)) {
-										    if (columnSpecification[i].length > 4 && columnSpecification[i][4]) {
-										        if (col_groups.indexOf(columnSpecification[i][4]) == -1) {
-									            		col_groups.push(columnSpecification[i][4]);
-									        	}
-										    }
-										}
-										// init column options and headers according to query
-										drawColDisplayOptions(columnSpecification);
-										drawColHeaders(columnSpecification);
-										$(".ui-layout-center > h1").html("Loading Table...");
-									},
-									"complete": function() {
-										// manually converting data types
-										// don't need this since the sorting takes text() of <td> regardless of source data
-										// convertTypes(columnSpecification);
-
-										if (tableNotLoaded)
-										    setTimeout(function() {
-										         initTable();
-										         $("#loading-dialog").dialog("close");
-										         tableNotLoaded = false;                          
-										    }, 50);
-										// apply retrieved filter when loaded.
-										setTimeout(function() {
-										    if ($("#col-filter-str-0").length) {
-										        $("#col-filter-str-0").trigger("change");
-										    } else {
-										        $("#col-filter-min-0").trigger("change");
-										    }
-										}, 200);
-									}
-								});
+   try {
+	$.ajax({
+		"dataType": "json",
+		"url": getPuzzleQuery(),
+		"success": function(data) {
+			normalizePuzzleResponse( data )
+			initPuzzleSelections();
+		},
+		"error": function(){
+			// put up some fake data
+			this.success( fakePuzzleResponse );
+		},
+		"complete": function() {
+			// Query for columns present in selected puzzles
+			$.ajax({
+				"dataType": "json",
+				"url": getColumnQuery(),
+				"success": function(data) {
+					normalizeColumnResponse( data );
+					fillColumns();
+					initColumnSelections();
+				},
+				"error": function(){
+					// put up some fake data
+					this.success( fakeColumnResponse );
+				},
+				"complete": function() {
+					// Query for data in the selected puzzles/columns 
+					$.ajax({
+						"dataType": "json",
+						"url": getDataQuery(),
+						"success": function(data) {
+							dataAjaxSuccess(data);
+							n_fields = gaColumnsToDownload.length; // n_fields should go away? !!!
+							// get group percentages in array
+							for (var i in Object.keys(columnSpecification)) {
+							    if (columnSpecification[i].length > 4 && columnSpecification[i][4]) {
+							        if (col_groups.indexOf(columnSpecification[i][4]) == -1) {
+						            		col_groups.push(columnSpecification[i][4]);
+						        	}
+							    }
 							}
-						});
-					}
-				});
+							// init column options and headers according to query
+							drawColDisplayOptions(columnSpecification);
+							drawColHeaders(columnSpecification);
+							$(".ui-layout-center > h1").html("Loading Table...");
+						},
+						"error": function(){
+							// put up some fake data
+							this.success( fakeDataResponse );
+						},
+						"complete": function() {
+							// manually converting data types
+							// don't need this since the sorting takes text() of <td> regardless of source data
+							// convertTypes(columnSpecification);
+
+							if (tableNotLoaded)
+							    setTimeout(function() {
+							         initTable();
+							         $("#loading-dialog").dialog("close");
+							         tableNotLoaded = false;                          
+							    }, 50);
+							// apply retrieved filter when loaded.
+							setTimeout(function() {
+							    if ($("#col-filter-str-0").length) {
+							        $("#col-filter-str-0").trigger("change");
+							    } else {
+							        $("#col-filter-min-0").trigger("change");
+							    }
+							}, 200);
+						}
+					});
+				}
+			});
+		}
+	});
+   } catch (err) {	// This probably doesn't do much, because most of the code is is executed from asynchronous events.
+	alert( err );
+   }
 
 }
+
+// Update gDataColumnIndex to match the column order of gTableData.  This is needed after re-ordering columns.
+function updateColumnTracking()
+{
+    for (i = 0; i < n_fields; i++) {
+	gDataColumnIndex[gTableData[i][columnNameIndex]] = i;
+    }
+
+}
+
+// Specific columns for right-panel
+function getColNums() {
+    return {
+        "designer": gDataColumnIndex["Designer_Name"],
+        "title": gDataColumnIndex["Design_Name"],
+        "sequence": gDataColumnIndex["Sequence_"],
+        "id": gDataColumnIndex["Design_ID"],
+        "round": gDataColumnIndex["Synthesis_Round"],
+        "description": gDataColumnIndex["Description_"],
+        "score": gDataColumnIndex["Eterna_Score"],
+        "flag": -1
+    };
+}
+
+//Change made in textEdit

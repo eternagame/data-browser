@@ -6,8 +6,9 @@ var sele_indexes = [];
 function fillDesignText(row, col_num) {
     var html = '';
     html += '<div class="ui-tabs-panel outline" id="right_panel_' + row[col_num["id"]] + '" style="clear:both;">';
-    html += '<p><b>' + row[col_num["title"]] + '</b> by <u>' + row[col_num["designer"]] + '</u></p>';
-    html += '<p>ID: <i style="color:#fff;">' + row[col_num["id"]] + '</i>  Eterna Score: <span class="light-green-font">' + row[col_num["score"]] + '</span> <span style="color:#888">/ 100</span></p>';
+    html += '<p><b>' + row[col_num["title"]] + '</b> by <u>' + (col_num["designer"] ? row[col_num["designer"]] : '(not in query)') + '</u></p>';
+    html += '<p>ID: <i style="color:#fff;">' + (col_num["id"] ? row[col_num["id"]] : '(not in query)') + '</i>  Eterna Score: <span class="light-green-font">' 
+               + (col_num["score"] ? row[col_num["score"]] : '(not in query)') + '</span> <span style="color:#888">/ 100</span></p>';
     html += '<p class="txt-hover"><i>' + (col_num["description"] ? row[col_num["description"]] : '') + '</i></p>';
     return html;
 }
@@ -52,13 +53,13 @@ function updateSele2Hist(ids, col_num) {
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
         html += fillDesignText(row, col_num);
-        // get S3 image depending on whether row is synthesized
+        // get S3 image depending on whether row is gTableData
         if (row[col_num["flag"]] == "Yes" || col_num["flag"] == -1) {
             var round = row[col_num["round"]];
             if (!round) { round = col_num["round"]; }
             html += '<img src="https://s3.amazonaws.com/eterna/labs/histograms_R' + round + '/' + row[col_num["id"]] + '.png" width="100%" style="padding-bottom:10px;"/></div>';
         } else {
-            html += '<p style="color:#000; background-color:#fff;"><i><u>Not synthesized. Switch data not available.</u></i></p></div>';
+            html += '<p style="color:#000; background-color:#fff;"><i><u>Not gTableData. Switch data not available.</u></i></p></div>';
         }
     }
     $("#tab-panel-east-2").html(html);

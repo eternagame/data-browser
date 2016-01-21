@@ -7,17 +7,19 @@ function fillColumns() {
 }
 
 // generate left-panel pcolumn selections from meta data; called once on init()
-function drawColumnSetOptions(col_names) {
-    var columnIDIndex = 0; // !!! kludge gColumnIndex['Column_ID'];
+function drawColumnSetOptions(gAvailableColumns) {
+    var columnNameIndex = gColumnsColumnIndex['Column_Name']; // !!! kludge gColumnIndex['Column_ID']; not 0
+/*
     var columnNameIndex = gColumnIndex['Column_Label'];
     var projectIDIndex = gColumnIndex['Project_ID'];
     var projectNameIndex = gColumnIndex['Project_Name'];
     var synthesisRoundIndex = gColumnIndex['Synthesis_Round'];
+*/
     var html = "";
-    for (i in col_names)  {
-        html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="col-XXX' + col_names[i] + '">';
+    for (i in gAvailableColumns)  {
+        html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="col-XXX' + gAvailableColumns[i] + '">';
         html += '<div class="gray-button-bg"></div>';
-        html += '<div class="column-title"><label><input type="checkbox" id="col-choice-' + col_names[i] +'" class="col-sort-chk-"/>' +col_names[i] + '</label></div>';
+        html += '<div class="column-title"><label><input type="checkbox" id="col-choice-' + gAvailableColumns[i] +'" class="col-sort-chk-"/>' +gAvailableColumns[i] + '</label></div>';
         html += '</li>';
     }
     $("#column-info").html(html);
@@ -25,11 +27,11 @@ function drawColumnSetOptions(col_names) {
     // retrieve filters from local storage
     if (typeof(Storage) !== "undefined") {
         for (var i = 0; i < gaColumns.length; i++) {
-            if (localStorage.getItem("col-choice-" + gaColumns[i][columnIDIndex]) == "true") {
-                $("#col-choice-" + gaColumns[i][columnIDIndex]).trigger("click");
+            if (localStorage.getItem("col-choice-" + gaColumns[i][columnNameIndex]) == "true") {
+                $("#col-choice-" + gaColumns[i][columnNameIndex]).trigger("click");
                 // has to do this since events are not bind yet
-                $("#col-choice-" + gaColumns[i][columnIDIndex]).parent().addClass("light-green-font");
-                gaColumnsToDownload.push(gaColumns[i][columnIDIndex]);
+                $("#col-choice-" + gaColumns[i][columnNameIndex]).parent().addClass("light-green-font");
+                gaColumnsToDownload.push(gaColumns[i][columnNameIndex]);
             }
         }
     }
@@ -49,9 +51,10 @@ function drawColumnSetOptions(col_names) {
 
 // initiate left-panel Column selections
 function initColumnSelections() {
-    var columnIDIndex = 0; // !!! kludge gColumnIndex['Column_ID'];
+    var columnNameIndex = gColumnsColumnIndex['Column_Name']; // !!! kludge gColumnIndex['Column_ID']; not 0
 
-    drawColumnSetOptions(col_names);
+
+    drawColumnSetOptions(gAvailableColumns);
 
     // when Column selection changes
     $("[id^='col-choice-']").on("click", function() {
@@ -70,7 +73,7 @@ function initColumnSelections() {
         // save to localStorage
         if (typeof(Storage) !== "undefined") {
             for (var i = 0; i < gaColumns.length; i++) {
-                localStorage.setItem("col-choice-" + gaColumns[i][columnIDIndex], $("#col-choice-" + gaColumns[i][columnIDIndex]).is(":checked"));
+                localStorage.setItem("col-choice-" + gaColumns[i][columnNameIndex], $("#col-choice-" + gaColumns[i][columnNameIndex]).is(":checked"));
             }
         }
     });
@@ -104,7 +107,7 @@ function initColumnSelections() {
 
 
 
-/* -- Unsuccessfull attempt to get JQuery multselection extension to work with dataTables
+/* -- Unsuccessful attempt to get JQuery multselection extension to work with dataTables
 
 (function sizeColumnSelections () {
     $(".ui-multiselect").width("90%"); //resizes "buttons", but not exactly as expected.

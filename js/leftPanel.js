@@ -8,7 +8,7 @@ function updateColSeleOpt2Table() {
     var new_sele = [];
     // use original order for assignment, tracked by "id" and "class" names
     for (var i = 0; i < n_fields; i++) {
-        new_sele.push($("#col-sort-chk-" + i.toString()).is(":checked"));
+        new_sele.push($("#col-sort-chk-" + gaDownloadedColumns[i]).is(":checked"));
     }
     for (var i = 0; i < n_fields; i++) {
         table.column(".td_def_" + i.toString()).visible(new_sele[i]);
@@ -26,53 +26,88 @@ function updateColSeleTable2Opt() {
     }
 
     for (var i = 0; i < n_fields; i++) {
-        $("#col-sort-chk-" + i.toString()).prop("checked", new_sele[i]);
+        $("#col-sort-chk-" + gaDownloadedColumns[i]).prop("checked", new_sele[i]);
     }
 }
 
 // sync column ordering from left-panel to table
 function updateColOrderOpt2Table() {
+    if (DEBUG) { console.log(">>> updateColOrderOpt2Table"); }
     if (DEBUG) { console.log("reorder, o->t"); }
-    var new_order = $("#displayed-info").sortable("toArray"), html = '';
-    for (var i = 0; i < n_fields; i++) {
-        new_order[i] = parseInt(new_order[i].replace("col-opt-", ""));
-    }
+
+    // Get the old ordering from the table itself, and compute the permutation vector
     var old_order = table.colReorder.order(), reorder = new Array(n_fields);
+    if (DEBUG) { console.log("old table column order = " + old_order.join(",")); }
+
+    // Assumption: the HTML has already changed, so compute the new table column ordering from it
+    var new_name_order = $("#displayed-info").sortable("toArray"), html = '';
+    if (DEBUG) { console.log("new_name_order = " + new_name_order.join(",")); }
+    if (DEBUG) { console.log(gDataColumnIndex); }
+    var new_order = [];
+    for (var i = 0; i < n_fields; i++) {
+        new_order[i] = gaDownloadedColumnIndex[new_name_order[i].replace("col-opt-", "")];
+    }
+    if (DEBUG) { console.log("requested new order = " + new_order.join(",")); }
+
+    // Compute the reorder vector
     // colReorder.order() returns different ordering between GET and SET
     // GET is on base of "original", SET is on base of "current", need conversion
     for (var i = 0; i < n_fields; i++) {
         reorder[i] = old_order.indexOf(new_order[i]);
     }
+
+    // Re-order the table columns
     table.colReorder.order(reorder);
+
+    // Update gDataColumnIndex to the new ordering
+    for (i = 0; i < new_order.length; i++) { 
+        gDataColumnIndex[gaDownloadedColumns[new_order[i]]] = i; 
+    }
+    if (DEBUG) { console.log("<<< updateColOrderOpt2Table"); }
 }
 
 // sync column ordering from table to left-panel
 function updateColOrderTable2Opt() {
+    if (DEBUG) { console.log("reorder, t->o"); }
+
+    // The table's representation of the dat has been rearranged; bring our data structures up to date.
+    //updateColumnTracking();
+
     var new_order = table.colReorder.order(), old_filter = [], html = '';
+    if (DEBUG) { console.log("new order = " + new_order); }
 
     // use original order for assignment, tracked by "id" and "class" names
     for (var i = 0; i < n_fields; i++) {
-        html += $("#col-opt-" + new_order[i].toString())[0].outerHTML;
+    // !!! Verify this !!!
+        var iSpec = gColumnIndex[gaDownloadedColumns[i]];
+
+        html += $("#col-opt-" + gaDownloadedColumns[new_order[i]])[0].outerHTML;
         // retain filter input val() for newly created DOM elements
-        if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
-            old_filter.push([parseFloat($("#col-filter-min-" + i).val()), parseFloat($("#col-filter-max-" + i).val())]);
+        if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
+            old_filter.push([parseFloat($("#col-filter-min-" + gaDownloadedColumns[i]).val()), parseFloat($("#col-filter-max-" + gaDownloadedColumns[i]).val())]);
         } else {
-            old_filter.push([$("#col-filter-str-" + i).val()]);
+            old_filter.push([$("#col-filter-str-" + gaDownloadedColumns[i]).val()]);
         }
     }
+
     $("#displayed-info").empty().html(html);
     updateColSeleTable2Opt();
     bindOptBlockEvent();
 
     // restore filter inputs
     for (var i = 0; i < n_fields; i++) {
-        if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
-            $("#col-filter-min-" + i).val(old_filter[i][0]);
-            $("#col-filter-max-" + i).val(old_filter[i][1]);
+        var iSpec = gColumnIndex[gaDownloadedColumns[i]]; //!!! filter IDs TBD
+        if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
+            $("#col-filter-min-" + gaDownloadedColumns[i]).val(old_filter[i][0]);
+            $("#col-filter-max-" + gaDownloadedColumns[i]).val(old_filter[i][1]);
         } else {
-            $("#col-filter-str-" + i).val(old_filter[i][0]);
+            $("#col-filter-str-" + gaDownloadedColumns[i]).val(old_filter[i][0]);
         }
     }
+
+    // The table's representation of the dat has been rearranged; bring our data structures up to date.
+    updateColumnTracking();
+
 }
 
 // sync column sorting from left-panel to table
@@ -203,17 +238,18 @@ function bindOptBlockEvent() {
         timer_col_filter_keyup = setTimeout(function() {
             filter_inputs = [];
             for (var i = 0; i < n_fields; i++) {
-                if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
+                var iSpec = gColumnIndex[gaDownloadedColumns[i]];
+                if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
                     // exclude disabled filters
-                    if ($("#col-filter-min-" + i).is(":disabled")) { continue; }
-                    var min = parseFloat($("#col-filter-min-" + i).val());
-                    var max = parseFloat($("#col-filter-max-" + i).val());
+                    if ($("#col-filter-min-" + gaDownloadedColumns[i]).is(":disabled")) { continue; }
+                    var min = parseFloat($("#col-filter-min-" + gaDownloadedColumns[i]).val());
+                    var max = parseFloat($("#col-filter-max-" + gaDownloadedColumns[i]).val());
                     // don't waste time on getting data and intersect if both NaN
                     if (isNaN(min) && isNaN(max)) { continue; }
                     filter_inputs.push([i, min, max]);
                 } else {
-                    if ($("#col-filter-str-" + i).is(":disabled")) { continue; }
-                    var regex = $("#col-filter-str-" + i).val();
+                    if ($("#col-filter-str-" + gaDownloadedColumns[i]).is(":disabled")) { continue; }
+                    var regex = $("#col-filter-str-" + gaDownloadedColumns[i]).val();
                     if (regex.length == 0) { continue; }
                     // decide whether valid regex
                     // var flag = true;
@@ -240,11 +276,12 @@ function bindOptBlockEvent() {
         // store filters in local storage
         if (typeof(Storage) !== "undefined") {
             for (var i = 0; i < n_fields; i++) {
-                if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
-                    localStorage.setItem("col-filter-min-" + i, parseFloat($("#col-filter-min-" + i).val()));
-                    localStorage.setItem("col-filter-max-" + i, parseFloat($("#col-filter-max-" + i).val()));
+                var iSpec = gColumnIndex[gaDownloadedColumns[i]];
+                if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
+                    localStorage.setItem("col-filter-min-" + gaDownloadedColumns[i], parseFloat($("#col-filter-min-" + gaDownloadedColumns[i]).val()));
+                    localStorage.setItem("col-filter-max-" + gaDownloadedColumns[i], parseFloat($("#col-filter-max-" + gaDownloadedColumns[i]).val()));
                 } else {
-                    localStorage.setItem("col-filter-str-" + i, $("#col-filter-str-" + i).val());
+                    localStorage.setItem("col-filter-str-" + gaDownloadedColumns[i], $("#col-filter-str-" + gaDownloadedColumns[i]).val());
                 }
             }
             localStorage.setItem("col-regex-toggle", $("#regex-toggle").is(":checked"));
@@ -256,26 +293,29 @@ function bindOptBlockEvent() {
 function drawColDisplayOptions(columnSpecification) {
     var html = "";
     for (var i = 0; i < n_fields; i++) {
-        html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="col-opt-' + i + '">';
+        var iSpec = gColumnIndex[gaDownloadedColumns[i]];
+        var columnName = gaDownloadedColumns[i];
+        html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="col-opt-' + columnName + '">';
         html += '<div class="gray-button-bg"></div>';
-        html += '<div class="column-title"><label><input type="checkbox" id="col-sort-chk-' + i +'" class="col-sort-chk"/>' + columnSpecification[i][0] + '</label><span style="float:right;">';
-        if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
-            html += '<input id="col-filter-min-' + i + '" type="number" placeholder="min" class="col-filter-num">&nbsp;&nbsp;<input id="col-filter-max-' + i + '" type="number" placeholder="max" class="col-filter-num"/>';
+        html += '<div class="column-title"><label><input type="checkbox" id="col-sort-chk-' + columnName +'" class="col-sort-chk"/>' + columnSpecification[iSpec][0] + '</label><span style="float:right;">';
+        if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
+            html += '<input id="col-filter-min-' + gaDownloadedColumns[i] + '" type="number" placeholder="min" class="col-filter-num">&nbsp;&nbsp;<input id="col-filter-max-' + gaDownloadedColumns[i] + '" type="number" placeholder="max" class="col-filter-num"/>';
         } else {
-            html += '<input id="col-filter-str-' + i + '" type="text" placeholder="" class="col-filter-txt"/>';
+            html += '<input id="col-filter-str-' + gaDownloadedColumns[i] + '" type="text" placeholder="" class="col-filter-txt"/>';
         }
-        html += '</span></div><div class="col-sort-opt rounded-small" id="col-sort-opt-' + i + '">none</div></li>';
+        html += '</span></div><div class="col-sort-opt rounded-small" id="col-sort-opt-' + gaDownloadedColumns[i] + '">none</div></li>';
     }
     $("#displayed-info").html(html);
 
     // retrieve filters from local storage
     if (typeof(Storage) !== "undefined") {
         for (var i = 0; i < n_fields; i++) {
-            if (columnSpecification[i][1] == "int" || columnSpecification[i][1] == "float") {
-                $("#col-filter-min-" + i).val(localStorage.getItem("col-filter-min-" + i));
-                $("#col-filter-max-" + i).val(localStorage.getItem("col-filter-max-" + i));
+            var iSpec = gColumnIndex[gaDownloadedColumns[i]];
+            if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
+                $("#col-filter-min-" + gaDownloadedColumns[i]).val(localStorage.getItem("col-filter-min-" + gaDownloadedColumns[i]));
+                $("#col-filter-max-" + gaDownloadedColumns[i]).val(localStorage.getItem("col-filter-max-" + gaDownloadedColumns[i]));
             } else {
-                $("#col-filter-str-" + i).val(localStorage.getItem("col-filter-str-" + i));
+                $("#col-filter-str-" + gaDownloadedColumns[i]).val(localStorage.getItem("col-filter-str-" + gaDownloadedColumns[i]));
             }
         }
     }
@@ -303,9 +343,9 @@ function initColOpt() {
             $("#loading-dialog").css({"min-height": 0, "padding-top": 0});
         }
         setTimeout(function() {
-            updateColOrderOpt2Table();
+            updateColOrderOpt2Table(); 
             $("#loading-dialog").dialog("close");
-        }, 5);
+        }, 10);	// 5 too short a time for HTML to settle?
     });
 
     // update options from table when user drag-and-drop a column <th> on table
@@ -346,7 +386,7 @@ function initColOpt() {
             // see if any column is displayed before
             var flag = false;
             for (var i = 0; i < n_fields; i++) {
-                if ($("#col-sort-chk-" + i.toString()).prop("checked")) {
+                if ($("#col-sort-chk-" + gaDownloadedColumns[i]).prop("checked")) {
                     flag = true;
                     break;
                 }
@@ -395,7 +435,8 @@ function initFilterInput() {
         var flag = true;
         for (var i = 0; i < filter_inputs.length; i++) {
             var idx = filter_inputs[i][0];
-            if (columnSpecification[idx][1] == "int" || columnSpecification[idx][1] == "float") {
+            var iSpec = gColumnIndex[gaDownloadedColumns[idx]];
+            if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
                 var min = filter_inputs[i][1];
                 var max = filter_inputs[i][2];
                 var num = extractNumCell(data[table.column(".td_def_" + idx).index()]);
@@ -423,10 +464,10 @@ function initFilterInput() {
         setTimeout(function() {
             $("[id^='col-filter-']").val("");
             // refresh all filters to table by trigger
-            if ($("#col-filter-str-0").length) {
-                $("#col-filter-str-0").trigger("change");
+            if ($("#col-filter-str-" + gaDownloadedColumns[0]).length) {
+                $("#col-filter-str-" + gaDownloadedColumns[0]).trigger("change");
             } else {
-                $("#col-filter-min-0").trigger("change");
+                $("#col-filter-str-" + gaDownloadedColumns[0]).trigger("change");
             }
             $("#loading-dialog").dialog("close");
         }, 5);

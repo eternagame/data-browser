@@ -6,8 +6,8 @@ var iframe_flag = false;
 var DEBUG = true;
 
 // hardcoded puzzle_id and target structures
-function getStr1(idx) { return table.row(idx).data()[gColumnIndex["Structure_1"]]; }
-function getStr2(idx) { return table.row(idx).data()[gColumnIndex["Structure_2"]]; }
+function getStr1(idx) { return table.row(idx).data()[gDataColumnIndex["Structure_1"]]; }
+function getStr2(idx) { return table.row(idx).data()[gDataColumnIndex["Structure_2"]]; }
 
 // Fusion table IDs
 var PuzzleTableID = "1U8t1qye2beaSl70XMTDHYoDznRWeopnOt1eoJy4T";
@@ -31,6 +31,14 @@ function normalizePuzzleResponse( data ) {
     }
 }
 
+var fakePuzzleResponse = {
+    columns: 
+        ["Puzzle_ID", "Puzzle_Name",], 
+    rows: [
+        ["1111111",   "Puzzle 1",],
+    ]
+}
+
 // ------------ (available) Column specification -------------------
 //
 
@@ -43,38 +51,51 @@ function getColumnQuery() {
 function normalizeColumnResponse( data ) {
     // convert fusion table results to internal data structures
     // Find the index of the "Column_Name" field
-    var columns = data.columns;
-    columnNameIndex = -1;
-    for ( i = 0; i < columns.length; i++) {
-        if (columns[i] == "Column_Name") {
-            columnNameIndex = i;
-        }
+    gColumnsColumnIndex = {};
+    for ( i = 0; i < data.columns.length; i++) {
+        gColumnsColumnIndex[data.columns[i]] = i;
     }
-    if (columnNameIndex == -1)
+    if (!!gColumnsColumnIndex["Column_Name"])
 	throw( 'The DB query for column specifications must contain a field named "Column_Name"' );
-            
-    columnSpecification = {};
-    col_names = {};
+
     gaColumns = data.rows;
+
+// Is this irrelevant until data is loaded?            
+    columnSpecification = {};
+    gAvailableColumns = {};
+    columnsColumnNameIndex = gColumnsColumnIndex["Column_Name"]
     for (i = 0; i < gaColumns.length; i++) {
-	gColumnIndex[gaColumns[i][columnNameIndex]] = i; //
-        col_names[parseInt(i)] = gaColumns[i][0]; 
+	gColumnIndex[gaColumns[i][columnsColumnNameIndex]] = i; //
+        gAvailableColumns[parseInt(i)] = gaColumns[i][0]; 
         columnSpecification[parseInt(i)] = gaColumns[i].slice( 1 ); 
-    }   
+    }
+   
 }
 
-// hardcoded function of specific columns for right-panel
+// Specific columns for right-panel
 function getColNums() {
     return {
-        "designer": gColumnIndex["Designer_Name"],
-        "title": gColumnIndex["Design_Name"],
-        "sequence": gColumnIndex["Sequence_"],
-        "id": gColumnIndex["Design_ID"],
-        "round": gColumnIndex["Synthesis_Round"],
-        "description": gColumnIndex["Description_"],
-        "score": gColumnIndex["Eterna_Score"],
+        "designer": gDataColumnIndex["Designer_Name"],
+        "title": gDataColumnIndex["Design_Name"],
+        "sequence": gDataColumnIndex["Sequence_"],
+        "id": gDataColumnIndex["Design_ID"],
+        "round": gDataColumnIndex["Synthesis_Round"],
+        "description": gDataColumnIndex["Description_"],
+        "score": gDataColumnIndex["Eterna_Score"],
         "flag": -1
     };
+}
+
+var fakeColumnResponse = {
+    columns:
+        ["Column_Name", "Column_Label",], 
+    rows: [
+        ["Design_ID",   "Design ID",], 
+        ["Design_Name", "Design Name",],
+        ["Sequence_",   "Sequence",],
+        ["Structure_1", "Structure 1",], 
+        ["Structure_2", "Structure 2",],
+    ] 
 }
 
 // ------------ Data specification -------------------
@@ -89,11 +110,14 @@ function getDataQuery() {
     puzzle_ids = puzzle_ids.substring(0, puzzle_ids.length - 1);
 
     // create SELECT list from gaColumnsToDownload array
-    var column_selection = "*";
+    var column_selection = "*";	// Not really a supported query, but occasionally useful for debugging
     if (gaColumnsToDownload.length > 0) {
 	var tmp = [];
 	for (var i = 0; i < gaColumnsToDownload.length; i++) tmp[i] = "'" + gaColumnsToDownload[i] + "'";
 	column_selection = tmp.join(",");
+    } else {
+        // What should the player see if no co,umps are selected?
+        alert("Select one or more columns for download");
     }
     // construct URL
 
@@ -102,29 +126,27 @@ function getDataQuery() {
 }
 
 function dataAjaxSuccess(data) {
-    synthesized = data['rows'];
-    $("#lab-title").html(data['kind']);
-    var downloadedColumns = data['columns'];
+    gTableData = data['rows'];
+    //$("#lab-title").html(data['kind']);
+    gaDownloadedColumns = data['columns'];
 
 
-/* This doesn't seem to make any sense !!!
-    var columnNameIndex = -1;
-    for ( i = 0; i < downloadedColumns.length; i++) {
-        if (downloadedColumns[i] == "Column_Name") {
-            columnNameIndex = i;
-        }
+    for ( i = 0; i < gaDownloadedColumns.length; i++) {
+        gaDownloadedColumnIndex[gaDownloadedColumns[i]] = i;	// Column name --> original index
+        gDataColumnIndex[gaDownloadedColumns[i]] = i;		// Column name --> current table column index
+ 
     }
-//    if (columnNameIndex == -1)
-//	throw( 'The DB query for the experimental data must contain a field named "Column_Name"' );
 
-*/
-    columnSpecification = {};
-    col_names = {};
-    for (i = 0; i < downloadedColumns.length; i++) {
-	gColumnIndex[gaColumns[i][columnNameIndex]] = i;
-        col_names[i] = downloadedColumns[i]; 
-        columnSpecification[i] = gaColumns[gColumnIndex[gaColumnsToDownload[i]]].slice(1); 
-    }   
+    updateColumnTracking();
+}
+
+var fakeDataResponse = { 
+    columns: 
+        ["Design_ID", "Design_Name", "Sequence_",  "Structure_1", "Structure_2"], 
+    rows: [
+        ["1111111",   "Design 1",    "AAAAAAAAAA", ".(((...)))",  "(((....)))",], 
+        ["2222222",   "Design 2",    "AAAAAAAAAA", "(((....)))",  "(((...))).",],
+    ] 
 }
 
 
