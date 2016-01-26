@@ -321,12 +321,13 @@ function drawColDisplayOptions(columnSpecification) {
     }
 }
 
-// initiate left-panel column options
+// initialize left-panel column selection accordion
+
 function initColOpt() {
     // update options from tabel state on init()
     $("#displayed-info").sortable({
         "handle": ".column-title",
-        // autoscroll when picked an item before droppoing, for long lists
+        // autoscroll when picked an item before dropping, for long lists
         "scroll": true,
         "scrollSensitivity": 75,
         "scrollSpeed": 15,
@@ -425,6 +426,7 @@ function initColOpt() {
             $("#loading-dialog").dialog("close");
         }, 5);
     });
+
 }
 
 // initiate left-panel filter inputs
@@ -504,7 +506,7 @@ function drawPuzzleSetOptions(gaPuzzles) {
         html += '<div class="lab-sele rounded-small">R' + gaPuzzles[i][synthesisRoundIndex] + '</div>';
         html += '</li>';
     }
-    $("#lab-info").html(html);
+    $("#puzzle-list").html(html);
 
     // retrieve filters from local storage
     if (typeof(Storage) !== "undefined") {
@@ -517,6 +519,7 @@ function drawPuzzleSetOptions(gaPuzzles) {
             }
         }
     }
+/*
     // if no lab_id selected, by default load the last lab only
     if (typeof(Storage) == "undefined" || !gaSelectedPuzzles.length) {
         var id = $("[id^='lab-chk-']").last().attr("id");
@@ -527,6 +530,7 @@ function drawPuzzleSetOptions(gaPuzzles) {
         // has to do this since events are not bind yet
         $("[id^='lab-chk-']").last().parent().addClass("light-green-font");
     }
+*/
 }
 
 // initiate left-panel puzzle selections
@@ -568,16 +572,17 @@ function initPuzzleSelections() {
 
     // refresh page based on new lab selection
     // new selection is saved in localStorage, upon refresh, it retrieves the info and save as gaSelectedPuzzles, then compose the data query
-    $("#lab-set-btn").on("click", function() {
+    $("#column-select-btn").on("click", function() {
         if (gaSelectedPuzzles.length) {
-            $("#loading-dialog").dialog("open");
-            $("#loading-dialog").css({"min-height": 0, "padding-top": 0});
-            location.reload();
-            //fetchAllData();
+            fetchColumns( function() {
+		$("#tab-panel-west-2").click();
+            });
         } else {
-            table.clear().draw();
+            alert("Select one or more puzzles before selecting columns");
+            //table.clear().draw();
         }
     });
+
     // uncheck all labs
     $("#lab-reset-btn").on("click", function() {
         $("[id^='lab-chk-']:checked").trigger("click");

@@ -343,8 +343,26 @@ function initTable() {
         "initComplete": function() { 
             // draw sequence numbering once on init
             drawSeqRuler();
-            // remove "Loading" placeholder
+            // remove "Loading" placeholder	// Move to pair with $(".ui-layout-center > h1").html("Loading Table...");
+
             $(".ui-layout-center > h1").remove();
+    // init side panels
+    initStr2D();
+    initColOpt();
+    initFilterInput();
+    // move buttons to same line with lab title
+    table.buttons().container().prependTo($("#button-container"));
+    $(".dt-buttons").removeClass("dt-buttons");
+
+
+    // slide-out effect of panels on init()
+    pageLayout.close("south"); // Still needed?, even though we're not currently using the south panel
+    pageLayout.close("west"); 
+    pageLayout.close("east");
+    resizeCenterTable();
+
+    // make sure table size and 2D JS size are right
+    $(window).on("resize", function() { resizeCenterTable(); });
         },
         "drawCallback": function() { 
             // draw horizontal separators every 5 rows
@@ -364,22 +382,11 @@ function initTable() {
         // not used because it fires for each row, too frequent
         "rowCallback": function(row, data, dataIndex) {}
     });
-
-    // init side panels
-    initStr2D();
-    initColOpt();
-    initFilterInput();
-    // move buttons to same line with lab title
-    table.buttons().container().prependTo($("#button-container"));
-    $(".dt-buttons").removeClass("dt-buttons");
+}
 
 
-    // slide-out effect of panels on init()
-    pageLayout.close("south");
-    pageLayout.close("west");
-    pageLayout.close("east");
-    // make sure table size and 2D JS size are right
-    $(window).on("resize", function() { resizeCenterTable(); });
+function initLayout(){
+
 }
 
 // handle table height resizeTimer
@@ -387,15 +394,15 @@ function resizeCenterTable() {
     clearTimeout(timer_center_resize);
     timer_center_resize = setTimeout(function() {
         if (DEBUG) { console.log("center-resize"); }
-        $("div.dataTables_scrollBody").css("height", $("#concept-center").height() - $("#lab-red-header").height() - $("div.dataTables_scrollHead").height() - 40);
-        // table.draw(); // Don't want to lose scroll position 
+
+        // !!!TODO: This calculation is not correct for all browsers.  The value of 36 is chosen as a compromise that seems to be widely acceptable
+        $("div.dataTables_scrollBody").css("height", $("#concept-center").height() - $("#lab-red-header").height() - $("div.dataTables_scrollHead").height() - 36);
     }, 100);
 }
 
 
 function fetchAllData()
 {
-   try {
 	$.ajax({
 		"dataType": "json",
 		"url": getPuzzleQuery(),
@@ -458,7 +465,8 @@ function fetchAllData()
 							         tableNotLoaded = false;                          
 							    }, 50);
 							// apply retrieved filter when loaded.
-							setTimeout(function() {
+							//!!! $("#col-filter-str-0") doesn't exist any more.  What should replace this code?
+							setTimeout(function() { 
 							    if ($("#col-filter-str-0").length) {
 							        $("#col-filter-str-0").trigger("change");
 							    } else {
@@ -471,11 +479,91 @@ function fetchAllData()
 			});
 		}
 	});
-   } catch (err) {	// This probably doesn't do much, because most of the code is is executed from asynchronous events.
-	alert( err );
-   }
-
 }
+
+function fetchPuzzles( continuation ) {
+    $.ajax({
+	"dataType": "json",
+	"url": getPuzzleQuery(),
+	"success": function(data) {
+	    normalizePuzzleResponse( data )
+	    initPuzzleSelections();
+	},
+	"error": function(){
+	    // put up some fake data
+	    this.success( fakePuzzleResponse );
+	},
+	"complete": function() {if (continuation) continuation()}
+    });
+}
+
+function fetchColumns( continuation ) {
+    $.ajax({
+	"dataType": "json",
+	"url": getColumnQuery(),
+	"success": function(data) {
+	    normalizeColumnResponse( data );
+	    fillColumns();
+	    initColumnSelections();
+	},
+	"error": function(){
+	    // put up some fake data
+	    this.success( fakeColumnResponse );
+	},
+	"complete": function() {if (continuation) continuation()}
+    });
+}
+
+function fetchData(  continuation ) {
+    $.ajax({
+	"dataType": "json",
+	"url": getDataQuery(),
+	"success": function(data) {
+	    dataAjaxSuccess(data);
+	    n_fields = gaColumnsToDownload.length; // n_fields should go away? !!!
+	    // get group percentages in array
+	    for (var i in Object.keys(columnSpecification)) {
+		if (columnSpecification[i].length > 4 && columnSpecification[i][4]) {
+		    if (col_groups.indexOf(columnSpecification[i][4]) == -1) {
+	                col_groups.push(columnSpecification[i][4]);
+	            }
+		}
+	    }
+	    // init column options and headers according to query
+	    drawColDisplayOptions(columnSpecification);
+	    drawColHeaders(columnSpecification);
+	    $(".ui-layout-center > h1").html("Loading Table...");
+	},
+	"error": function(){
+	    // put up some fake data
+	    this.success( fakeDataResponse );
+	},
+	"complete": function() {
+	    // manually converting data types
+	    // don't need this since the sorting takes text() of <td> regardless of source data
+	    // convertTypes(columnSpecification);
+	    if (continuation) continuation()
+
+	    if (tableNotLoaded)
+		setTimeout(function() {
+		    initTable();
+		        $("#loading-dialog").dialog("close");
+		        tableNotLoaded = false;                          
+		}, 50);
+	    // apply retrieved filter when loaded.
+	    /* These ids don't exist any more.  What did this code actually do?
+	    setTimeout(function() {
+		 if ($("#col-filter-str-0").length) {
+		     $("#col-filter-str-0").trigger("change");
+		 } else {
+		     $("#col-filter-min-0").trigger("change");
+		 }
+	    }, 200);
+            */
+	}
+    });
+}
+
 
 // Update gDataColumnIndex to match the column order of gTableData.  This is needed after re-ordering columns.
 function updateColumnTracking()
@@ -500,4 +588,75 @@ function getColNums() {
     };
 }
 
-//Change made in textEdit
+    //--------------------------------------------------------------------
+    // Check for, and act on, any URL query string coming from the iframe container
+    //-------------------------------------------------------------------- 
+    var queryString;
+
+    // Send request to parent
+    function requestQueryString () {
+       window.parent.postMessage("queryString?", "*");
+    }
+
+    // Record the response
+    function receiveMessage(event)
+    {
+        queryString = event.data;
+    }
+
+    // Set things in motion
+    function asyncGetQueryString( continuation ) {
+        // If the window is its own parent, there is no iframe.  Get the query string from the window itself
+        if (window.parent == window) {
+            if (location.search)
+                queryString = "queryString:" + location.search;
+	    setTimeout( function() {
+                continuation( queryString )
+            }, 0 );
+        } else {        
+            // Prepare for response
+            window.addEventListener("message", receiveMessage, false);
+            // Ask parent window to send query string
+            requestQueryString ();
+            // Wait for 20 ms for a response from parent
+            if (continuation) {
+	        setTimeout( function() {
+                    continuation( queryString )
+                }, 20 );
+            }
+        }
+    }
+
+    // Act on the query string
+    function processQueryString( queryString ) {
+        // Parse the options from the query string
+        if (queryString) {
+            console.log("iframe received '" + queryString + "'");
+            var options = {};
+            for (i in allOptions = location.search.substring(1).split("&")) { 
+                var oneOption = allOptions[i].split("="); 
+                options[oneOption[0]]=oneOption[1]
+            }
+            // 
+            if (options.exec && options.exec == "fetchAllData") fetchAllData();
+        
+        }
+        else {
+            console.log("No queryString received. Let things take their natural course.");
+        }
+    }
+
+// Initiate the interaction with the player, based on the absence/presence/content of the query string.
+// The query string can come directly from the window or indirectly from the parent Eterna container.
+function initAction() {
+    asyncGetQueryString( processQueryString );
+}
+
+/*
+// Debugging aid -- have a place to set breakpoint, to see what is causing a pane to close. !!! But including this code has unwanted side effects, even without placing the breakpoint.
+$("body").layout({
+    onclose_start: function () {
+        return true; // false = Cancel
+    }
+});
+*/

@@ -116,8 +116,10 @@ function getDataQuery() {
 	for (var i = 0; i < gaColumnsToDownload.length; i++) tmp[i] = "'" + gaColumnsToDownload[i] + "'";
 	column_selection = tmp.join(",");
     } else {
-        // What should the player see if no co,umps are selected?
-        alert("Select one or more columns for download");
+        // UI will enforce selecting at least one column, but just in case ...
+        column_selection = "*";
+        $("#loading-dialog").dialog("close");
+        return "";
     }
     // construct URL
 

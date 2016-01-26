@@ -79,32 +79,33 @@
 				<div>
 					<div class="trans-panel rounded-5 col-options-panel">
 						<div class="trans-panel-bg"></div>
-						<ul id="lab-info" class="ui-sortable col-option-holder" style=""></ul>
+						<ul id="puzzle-list" class="ui-sortable col-option-holder" style=""></ul>
 						<div class="clearer"></div>
 						<br/>
-						<div class="green-button clickable centered rounded-5 left-panel-btn" id="lab-set-btn">Set</div>
+						<div class="green-button clickable centered rounded-5 left-panel-btn" id="column-select-btn" style="width: 120px">Select Columns</div>
+<!--
 						<div class="purple-button clickable centered rounded-5 left-panel-btn" id="lab-reset-btn">Clear all</div>
+-->
 					</div>
 				</div>
 
 				<h3><a id="tab-panel-west-2" href="#">Column Selection</a></h3>
 				<div>
 					<!-- columns to download, copied from below -->
-					<div class="trans-panel rounded-5 col-download-panel">
+					<div class="trans-panel rounded-5 col-options-panel">
 						<div class="trans-panel-bg"></div>
 						<span style="margin-left: 20px;">
+<!--
 							<div class="purple-button clickable centered rounded-5 left-panel-btn" id="filter-reset-btn" style="width: 100px;">Clear Filter</div>
+-->
 						</span>
 						<div class="clearer" style="margin-bottom: 5px;"></div>
-
 						<div class="clearer" style="margin-bottom: 5px;"></div>
-						<ul id="column-info" class="ui-sortable col-option-holder" style=""></ul>  <!-- //removed col-option-holder class and displayed-info id-->
+						<ul id="column-info" class="ui-sortable col-option-holder" style=""></ul>
+						<div class="clearer"></div>
+						<br/>
+						<div class="green-button clickable centered rounded-5 left-panel-btn" id="load-data-btn" style="width: 120px">Load Data</div>
 					</div>
-<!--
-							<select id="Columns" title="Columns" multiple="multiple" name="columns" size="20">
-							</select>
-						</div>
--->
 					<div class="clearer"></div>
 				</div>
 
@@ -153,7 +154,9 @@
 				<thead id="table-thead"></thead>
 			</table>
 			<h1 style="text-align:center;">
+<!--
 				Loading Query...
+-->
 			</h1>
 		</div>
 
@@ -266,6 +269,7 @@
 						"size": 450, 
 						"onresize":	resize2DStructure, // east accordion nested inside a tab-panel
 					},
+					"east__initClosed": true,
 					"center": {
 						"closable": false,
 						"resizable": true,
@@ -281,6 +285,10 @@
 				// INIT ALL ACCORDIONS - EVEN THOSE NOT VISIBLE
 				$("#accordion-west").accordion({ "heightStyle": "fill" });
 				$("#accordion-east").accordion({ "heightStyle": "fill" });
+
+				// Start with east panel closed
+				//pageLayout.close("east");
+
 				// show loading animation
 	    			$("#loading-dialog").dialog({"modal": true});
 	    			// remove extra borders and resize it square
@@ -288,8 +296,12 @@
 	    			// have to be after dialog() call
 				$("#loading-dialog").css({"min-height": 0, "padding-top": 0});
 
-				// Query for available puzzles
-				fetchAllData();
+				// Query for available puzzles, closing the loading dialog when done
+				fetchPuzzles( function () {
+				    $("#loading-dialog").dialog("close");
+				});
+
+				initAction();
 			});
 		</script>
 	</body> 

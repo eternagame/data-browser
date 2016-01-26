@@ -77,32 +77,27 @@ function initColumnSelections() {
             }
         }
     });
-/*
-    // auto show/hide project info on hover
-    $("[id^='lab-sele-']").hover(function() {
-        $(".column-title > label > span", this).show();
-    }, function() {
-        $(".column-title > label > span", this).hide();
 
-    });
-    $("[id^='lab-sele-'] > .column-title > label > span").hide();
-
-    // refresh page based on new lab selection
-    // new selection is saved in localStorage, upon refresh, it retrieves the info and save as gaColumnsToDownload, then compose the data query
-    $("#lab-set-btn").on("click", function() {
+    $("#load-data-btn").on("click", function() {
         if (gaColumnsToDownload.length) {
-            $("#loading-dialog").dialog("open");
-            $("#loading-dialog").css({"min-height": 0, "padding-top": 0});
-            location.reload();
-        } else {
-            table.clear().draw();
+            if (tableNotLoaded) {
+                fetchData( function() {
+		    $("#tab-panel-west-3").click(); // Open Display Control accordion
+                });
+            }
+            else {
+                // It's unclear how to reload a table in combination of our use of DataTables "data" option.
+                // Long term, it might be best to switch to the more modern "ajax" option; it seems to have the hooks we need.
+                // For the short term, we'll reload the page, with the query string option to go directly to loading the table.
+                location = location = location.pathname + "?exec=fetchAllData";
+            }
+        }
+        else {
+             alert("Select one or more columns before downloading data");
         }
     });
-    // uncheck all labs
-    $("#lab-reset-btn").on("click", function() {
-        $("[id^='lab-chk-']:checked").trigger("click");
-    });
-*/
+
+
 }
 
 
