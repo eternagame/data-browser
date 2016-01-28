@@ -552,13 +552,23 @@ function initPuzzleSelections() {
             $(this).parent().removeClass("light-green-font");
             gaSelectedPuzzles.splice(gaSelectedPuzzles.indexOf(id), 1);
         }
-
+        // update list of selected puzzles in the center panel
+	//
+	// !!! TODO: put only selected puzzles in title
+        // update center panel title with names of selected puzzles
+        var myPuzzleNames = [];
+        $("[id^='lab-chk-']").parent().each( function(){
+            myPuzzleNames.push( /<b>(.*)<\/b>/.exec($(this).html())[1] );
+        });
+        $("#lab-title").html( "Puzzles - " + myPuzzleNames.join(", ") );
+        
         // save to localStorage
         if (typeof(Storage) !== "undefined") {
             for (var i = 0; i < gaPuzzles.length; i++) {
                 localStorage.setItem("lab-chk-" + gaPuzzles[i][puzzleIDIndex], $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).is(":checked"));
             }
         }
+
     });
 
     // auto show/hide project info on hover
@@ -575,6 +585,7 @@ function initPuzzleSelections() {
     $("#column-select-btn").on("click", function() {
         if (gaSelectedPuzzles.length) {
             fetchColumns( function() {
+		$(".ui-layout-center > h1").html('Now select one or more columns to download.<br><br>Then click on the "Load Data" button.');
 		$("#tab-panel-west-2").click();
             });
         } else {

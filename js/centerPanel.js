@@ -354,11 +354,12 @@ function initTable() {
     table.buttons().container().prependTo($("#button-container"));
     $(".dt-buttons").removeClass("dt-buttons");
 
-
+/* Move the decision about what panels to open to a higher level
     // slide-out effect of panels on init()
     pageLayout.close("south"); // Still needed?, even though we're not currently using the south panel
-    pageLayout.close("west"); 
+    //pageLayout.close("west"); 
     pageLayout.close("east");
+*/
     resizeCenterTable();
 
     // make sure table size and 2D JS size are right
@@ -401,7 +402,7 @@ function resizeCenterTable() {
 }
 
 
-function fetchAllData()
+function fetchAllData( continuation )
 {
 	$.ajax({
 		"dataType": "json",
@@ -459,6 +460,7 @@ function fetchAllData()
 							// convertTypes(columnSpecification);
 
 							if (tableNotLoaded)
+							    if (continuation) continuation()
 							    setTimeout(function() {
 							         initTable();
 							         $("#loading-dialog").dialog("close");
@@ -638,7 +640,10 @@ function getColNums() {
                 options[oneOption[0]]=oneOption[1]
             }
             // 
-            if (options.exec && options.exec == "fetchAllData") fetchAllData();
+            if (options.exec && options.exec == "fetchAllData") fetchAllData( function() {
+                    $("#tab-panel-west-3").click(); // Open Display Control accordion
+                });
+
         
         }
         else {

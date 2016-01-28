@@ -299,6 +299,7 @@
 				// Query for available puzzles, closing the loading dialog when done
 				fetchPuzzles( function () {
 				    $("#loading-dialog").dialog("close");
+				    $(".ui-layout-center > h1").html('Select one or more puzzles from the list on the left.<br><br>Then click on the "Select Columns" button.');
 				});
 
 				initAction();

@@ -82,11 +82,11 @@ function initColumnSelections() {
         if (gaColumnsToDownload.length) {
             if (tableNotLoaded) {
                 fetchData( function() {
-		    $("#tab-panel-west-3").click(); // Open Display Control accordion
+                    $("#tab-panel-west-3").click(); // Open Display Control accordion
                 });
             }
             else {
-                // It's unclear how to reload a table in combination of our use of DataTables "data" option.
+                // It's unclear how to reload a table, given our use of the DataTables "data" option.
                 // Long term, it might be best to switch to the more modern "ajax" option; it seems to have the hooks we need.
                 // For the short term, we'll reload the page, with the query string option to go directly to loading the table.
                 location = location = location.pathname + "?exec=fetchAllData";
