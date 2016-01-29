@@ -8,11 +8,11 @@ class Root:
 
     @cherrypy.expose()
     def old(self):
-        return load_html('demo.html')
+        return load_html('data-browser.html')
 
     @cherrypy.expose(['index'])
     def new(self):
-        html = load_html('demo.html')
+        html = load_html('data-browser.html')
         html = html.replace('js/demo_old.js', 'js/demo_new.js')
         return html
 
