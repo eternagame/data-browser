@@ -91,7 +91,7 @@ function updateColOrderTable2Opt() {
         }
     }
 
-    $("#displayed-info").empty().html(html);
+    // $("#displayed-info").empty().html(html); //!!!?
     updateColSeleTable2Opt();
     bindOptBlockEvent();
 
