@@ -8,18 +8,14 @@ function fillColumns() {
 
 // generate left-panel pcolumn selections from meta data; called once on init()
 function drawColumnSetOptions(gAvailableColumns) {
-    var columnNameIndex = gColumnsColumnIndex['Column_Name']; // !!! kludge gColumnIndex['Column_ID']; not 0
-/*
-    var columnNameIndex = gColumnIndex['Column_Label'];
-    var projectIDIndex = gColumnIndex['Project_ID'];
-    var projectNameIndex = gColumnIndex['Project_Name'];
-    var synthesisRoundIndex = gColumnIndex['Synthesis_Round'];
-*/
+    var columnNameIndex = gColumnsColumnIndex['Column_Name'];  // Switch to Column_Label?
+    var columnLabelIndex = gColumnsColumnIndex['Column_Label'];
+
     var html = "";
     for (i in gAvailableColumns)  {
         html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="col-XXX' + gAvailableColumns[i] + '">';
         html += '<div class="gray-button-bg"></div>';
-        html += '<div class="column-title"><label><input type="checkbox" id="col-choice-' + gAvailableColumns[i] +'" class="col-sort-chk-"/>' +gAvailableColumns[i] + '</label></div>';
+        html += '<div class="column-title"><label><input type="checkbox" id="col-choice-' + gAvailableColumns[i] +'" class="col-sort-chk"/>' + gAvailableColumns[i]+ '</label></div>'; //!!! fix hard coded subscript 1
         html += '</li>';
     }
     $("#column-info").html(html);
@@ -30,29 +26,17 @@ function drawColumnSetOptions(gAvailableColumns) {
             if (localStorage.getItem("col-choice-" + gaColumns[i][columnNameIndex]) == "true") {
                 $("#col-choice-" + gaColumns[i][columnNameIndex]).trigger("click");
                 // has to do this since events are not bind yet
-                $("#col-choice-" + gaColumns[i][columnNameIndex]).parent().addClass("light-green-font");
+                $("#col-choice-" + gaColumns[i][columnNameIndex]).parent(); // .addClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
                 gaColumnsToDownload.push(gaColumns[i][columnNameIndex]);
             }
         }
     }
-/*
-    // if no lab_id selected, by default load the last lab only
-    if (typeof(Storage) == "undefined" || !gaColumnsToDownload.length) {
-        var id = $("[id^='col-chk-']").last().attr("id");
-        id = id.substring(id.lastIndexOf("-") + 1, id.length);
-        gaColumnsToDownload.push(iColumnd);
-
-        $("[id^='col-chk-']").last().trigger("click");
-        // has to do this since events are not bind yet
-        $("[id^='col-chk-']").last().parent().addClass("light-green-font");
-    }
-*/
 }
 
 // initiate left-panel Column selections
 function initColumnSelections() {
-    var columnNameIndex = gColumnsColumnIndex['Column_Name']; // !!! kludge gColumnIndex['Column_ID']; not 0
-
+    var columnNameIndex = gColumnsColumnIndex['Column_Name']; // Switch to Column_Label?
+    var columnLabelIndex = gColumnsColumnIndex['Column_Label'];
 
     drawColumnSetOptions(gAvailableColumns);
 
@@ -63,10 +47,10 @@ function initColumnSelections() {
 
         // render color change green/gray
         if ($(this).is(":checked")) {
-            $(this).parent().addClass("light-green-font");
+            // $(this).parent().addClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
             gaColumnsToDownload.push(id);
         } else {
-            $(this).parent().removeClass("light-green-font");
+            // $(this).parent().removeClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
             gaColumnsToDownload.splice(gaColumnsToDownload.indexOf(id), 1);
         }
 

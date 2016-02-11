@@ -26,56 +26,9 @@
 		</script>
 	</head> 
 	<body> 
-<!--
-		<div class="ui-layout-north ui-widget-content" style="background-color:#061a34;">
-			<!- header logo etc, replace with <block> ->
-			<!- drop-down menu not working for this simple copy&paste version ->
-			<div name="top-bar" style="padding-top:20px;height:75px;background-image:url(https://s3.amazonaws.com/eterna/eterna2/bg_rna.png);background-repeat:no-repeat;background-position:right -70px;clear:both;margin-left:25px;" default="use_header_right:1">
-				<div style="float: right">
-					<div name="user-login" style="margin-top:-15px;clear:both;padding-right:10px;" id="_pbid-4">
-						<div name="login" builder="BuilderLogin" id="_pbid-7">
-							<div style="margin-top: 5px; margin-bottom: 15px;">
-								<input class="dark-input" style="width: 70px; font-size: 12px; text-align: center; padding: 1px;" type="text" placeholder="username" disabled>&nbsp;&nbsp;
-								<input class="dark-input" style="width: 70px; font-size: 12px; text-align: center;" type="password" placeholder="password" disabled>&nbsp;
-								<span class="clickable" id="login" style="font-size: 12px; padding: 4px; font-weight: bolder; text-decoration: underline; color: #CCCCCC;"><strike>Log in</strike></span>&nbsp;
-								<span tag="span" class="clickable" id="register" style="font-size:12px;padding:4px;font-weight:bolder;text-decoration:underline;color:#CCCCCC;" name="block-temp-name-2"><strike>Register</strike></span>&nbsp;
-								<span class="clickable" style="font-size: 12px; color: #CCCCCC; text-align: center; padding: 4px;">
-									<a style="color: #CCCCCC;"><strike>Lost password?</strike></a>
-								</span>
-								<span class="clickable" style="font-size: 12px; color: #CCCCCC; text-align: center; padding: 4px; padding-right: 7px;">
-									<a style="color: #CCCCCC;"><strike>Facebook connect</strike></a>
-								</span>
-							</div>
-						</div>
-					</div>
-					<div name="navigation-menu" style="position:relative;z-index:10;margin-top:-10px;clear:both;float:right;padding-right:10px;" id="_pbid-5">
-						<div class="trans-panel rounded-5">
-							<div class="trans-panel-bg rounded-5"></div>
-							<ul id="HDropdown-orange-classic">
-								<li><a style="font-weight: bold; color: #fff;"><strike>Help</strike></a></li>
-								<li><a style="font-weight: bold; color: #fff;"><strike>Community</strike></a></li>
-								<li><a style="font-weight: bold; color: #fff;"><strike>Cloud Lab</strike></a></li>
-								<li><a style="font-weight: bold; color: #fff;"><strike>Puzzle</strike></a></li>
-								<li><a style="font-weight: bold; color: #fff;"><strike>Roadmap</strike></a></li>
-							</ul>
-						</div>
-					</div>
-					<div style="clear: both; height: 10px"></div>
-				</div>
-				<div name="logo" style="position:relative;float:left;margin-top:-10px;" id="_pbid-6">
-					<a style="position: relative; z-index: 0">
-						<img height="65px" src="https://s3.amazonaws.com/eterna/eterna2/tb_banner_v2_720.png">
-					</a>
-					<img style="position: absolute; z-index: -1; top: 0px; left: 0px;" src="https://s3.amazonaws.com/eterna/eterna2/logo-bubble.png">
-				</div>
-				<div class="clearer"></div>
-			</div>
-			<!- end of <block> header ->
-		</div> 
--->		
 		<div id="selections_panel" class="ui-layout-west no-scrollbar">
 			<div id="accordion-west">
-				<h3><a id="tab-panel-west-1" href="#">Puzzle Selection</a></h3>
+				<h3><a id="tab-panel-west-1" href="#" style="display:none">Puzzle Selection</a></h3>
 				<div>
 					<div class="trans-panel rounded-5 col-options-panel">
 						<div class="trans-panel-bg"></div>
@@ -89,7 +42,7 @@
 					</div>
 				</div>
 
-				<h3><a id="tab-panel-west-2" href="#">Column Selection</a></h3>
+				<h3><a id="tab-panel-west-2" href="#" style="display:none">Column Selection</a></h3>
 				<div>
 					<!-- columns to download, copied from below -->
 					<div class="trans-panel rounded-5 col-options-panel">
@@ -109,35 +62,41 @@
 					<div class="clearer"></div>
 				</div>
 
-				<h3><a id="tab-panel-west-3" href="#">Display Selection</a></h3>
+				<h3><a id="tab-panel-west-3" href="#" style="display:none">Display/Filter/Sort</a></h3>
 				<div>
 					<!-- column options, copied from <block> -->
 					<div class="trans-panel rounded-5 col-options-panel">
 						<div class="trans-panel-bg"></div>
-						<span style="margin-left: 20px;">
+						<span id="tab-panel-west-3-header" style="margin-left: 20px;">
 							<label>
 								<input type="checkbox" id="regex-toggle" style="width:25px;"/>
 								<a href="https://en.wikipedia.org/wiki/Regular_expression" target="_blank"><i>RE</i></a> search
 							</label>
-							<div class="purple-button clickable centered rounded-5 left-panel-btn" id="filter-reset-btn" style="width: 100px;">Clear Filter</div>
+<!--
+							<div class="purple-button clickable centered rounded-5 left-panel-btn" id="filter-reset-btn" style="width: 100px;">Clear Filters</div>
+-->
 						</span>
+						<ul id="displayed-info" class="ui-sortable col-option-holder" style=""></ul>
 						<div class="clearer" style="margin-bottom: 5px;"></div>
+<!--
 						<div class="purple-button clickable centered rounded-5 left-panel-btn" id="sort-reset-btn" style="width: 100px;">Clear Sort</div>
+-->
 						<div class="blue-button clickable centered rounded-5 left-panel-btn" id="sele-all-btn" style="width: 100px;">Show All</div>
 						<div class="blue-button clickable centered rounded-5 left-panel-btn" id="sele-none-btn" style="width: 100px;">Hide All</div>
+						<div class="purple-button clickable centered rounded-5 left-panel-btn" id="filter-reset-btn" style="width: 100px;">Clear Filters</div>
 						<div class="clearer" style="margin-bottom: 5px;"></div>
-						<ul id="displayed-info" class="ui-sortable col-option-holder" style=""></ul>
 					</div>
 					<div class="clearer"></div>
 				</div>
-
-				<h3><a id="tab-panel-west-4" href="#">Advanced Sorting</a></h3>
-				<div>
+<!--
+				<h3><a id="tab-panel-west-4" href="#" style="display:none">Advanced Sorting</a></h3>
+				<div id="tab-panel-west-4-text" style="display:none">
 					<p>There are two distinct methods of sorting.  One is to sort by column values, over one or more columns. This meted of sorting can be controlled either here or in the list view itself.</p>
-	                <p>The second type of sorting is by similarity (or dissimilarity) to a selected design.  The Flash browser implements this for one special case -- similarity in sequence, measured with the Manhatten block metric.</p>
-	                <p>The new browser will generalize this to multiple columns at once, using metrics appropriate to each column.</p>
-	                <p>It will also allow the player to define dissimilarity columns.  For example, a player might ask to see designs that are similar in predicted structure but dissimilar in the Eterna sub-scores at the top of the list. </p>
+					<p>The second type of sorting is by similarity (or dissimilarity) to a selected design.  The Flash browser implements this for one special case -- similarity in sequence, measured with the Manhatten block metric.</p>
+					<p>The new browser will generalize this to multiple columns at once, using metrics appropriate to each column.</p>
+					<p>It will also allow the player to define dissimilarity columns.  For example, a player might ask to see designs that are similar in predicted structure but dissimilar in the Eterna sub-scores at the top of the list. </p>
 				</div>
+-->
 			</div>
 		</div>
 
@@ -146,7 +105,7 @@
 			
 			<div id="lab-red-header" class="red-header" style="font-size:20px; height:32px; margin-bottom:10px;">
 				<div id="lab-title" style="float:left; display:inline-block; margin:5px;"></div>
-				<div id="button-container" style="float:right; display:inline-block;">
+				<div id="table-button-container" style="float:right; display:inline-block;">
 					<div class="clearer"></div>
 				</div>
 			</div>
@@ -162,32 +121,21 @@
 
 		<div id="tabs-east" class="ui-layout-east no-padding no-scrollbar">
 			<ul class="allow-overflow">
-				<li><a href="#tab-panel-east-1">2D Structure</a></li>
-				<li><a href="#tab-panel-east-2">Switch Graph</a></li>
+				<li><a id="tab-panel-east-1-text" href="#tab-panel-east-1"></a></li>    <!-- Add text later -->
+				<li><a id="tab-panel-east-2-text" href="#tab-panel-east-2"></a></li>
 			</ul>
 			<div class="ui-layout-content ui-widget-content no-scrollbar" style="border-top: 0;">
-				<!-- Detail window, tab 1, two iframes -->
 				<div id="tab-panel-east-1" class="full-height no-padding add-scrollbar" style="background-color:#000030; color:#ccc;"></div>
-				<!-- Detail window, tab 2, two images of switch graphs -->
 				<div id="tab-panel-east-2" class="full-height no-padding add-scrollbar" style="background-color:#000030; color:#ccc;"></div>
 			</div>
 		</div>
-<!-- I don't think we really need this footer.  reserve the panel for future
-		<div class="ui-layout-south ui-widget-content" style="background-color:#061a34;">
-			<div name="footer" style="clear:both; padding-top:17px; padding-bottom:17px; text-align:center;" id="_pbid-1">
-				<div style="font-family: 'Helvetica Neue', 'Open Sans', Arial, gulim; font-size:11px; font-weight: 300; color:#D0D0D0; padding:8px;">
-					Users agree that all user-submitted content is licensed under a <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" style="color:#ccc;">Creative Commons Attribution Non Commercial ShareAlike 4.0 International license</a>.
-				</div>
-				<img src="https://s3.amazonaws.com/eterna/eterna2/footer.png">
-			</div>
-		</div>
--->
+
 		<!-- JS loading order matters -->
 		<script type="text/javascript" src="js/lib/layout/jquery.layout-latest.js"></script>                        <!-- ver 1.4.4  -->
 		<script type="text/javascript" src="js/lib/layout/jquery.layout.resizeTabLayout.js"></script>               <!-- ver 1.3    -->
 		<script type="text/javascript" src="js/lib/layout/jquery.layout.resizePaneAccordions.min.js"></script>      <!-- ver 1.2    -->
 
-<!--		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.min.js"></script>         -->       <!-- ver 1.10.9 -->
+<!--		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.min.js"></script> !!! temp; replaced with below for debugging        -->       <!-- ver 1.10.9 -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.js"></script>                       <!-- ver 1.10.10 -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.buttons.min.js"></script>           <!-- ver 1.0.3  -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.colReorder.min.js"></script>        <!-- ver 1.2.0  -->
@@ -212,6 +160,7 @@
 
 		<script type="text/javascript"> 
 			// global variables
+			var gOptions= {};		// options, taken from the URL query string
 
 			var table;		// The DataTables object
 			// gTableData is the primary data source, as received from the database query.  It is dynamically restructured by the DataTables Reorder extension,
@@ -219,14 +168,14 @@
 			// Once the DataTable is initialized, gTableData needs to be treated as read-only.
 			var gTableData = [];
 
-			// gDataColumnIndex acts as a hash table of column names to gTableData's column indices.  It is updated by application code when
-			//  gTableData columns are reordered.
+			// gDataColumnIndex acts as a hash table of column names to gTableData's column indices.  
+                        // It needs to be updated by application code (updateColOrderOpt2Table() and ?) whenever gTableData columns are reordered.
 			var gDataColumnIndex = {}; // column name -> gTableData[] column index )
 
 			var pageLayout;        	// The UI Layout object
 			var gaColumns = [];    	// array of column records retrieved from server
-			var gColumnIndex = {}; 	// column name -> index into rows of gaColumns;
-                        var gColumnsColumnIndex = {};  // Columns column name into column index
+                        var gColumnsRowIndex = {};  // data column name -> index into rows of gaColumns
+                        var gColumnsColumnIndex = {};  // column column name -> index into columns of gaColumns 
 			var columnNameIndex = -1;
 
 
@@ -234,12 +183,12 @@
 			var gaDownloadedColumnIndex = {}; // Mapping of downloaded column names to original order
 
 			var gaColumnsToDownload = [];
-			var columnSpecification = {}; // !!! property names are integers from 0, so could be converted to an array.
-			var gAvailableColumns = {}; // !!! This is also an array-like object, parallel to columnSpecification, but holding only column names
-
+			var gaColumnSpecification = [];  
+			var gAvailableColumns = [];   
 			col_groups = []; // Partially implemented? Siqi used for calculating percentages
 
- 
+			var gProjectIDs = {}; // The projects encompassed by the selected puzzles
+
 			var gaPuzzles = [];
 			var gPuzzleIndex = {};
 			var gaSelectedPuzzles = [];
@@ -247,7 +196,7 @@
 			var puzzle_set_url;
 			var tableNotLoaded = true;
 
-			navigator.userAgent += " (gzip)";
+			navigator.userAgent += " (gzip)"; // Needed for fusion table API to compress responses
 
 			$(document).ready(function() {
 				resizePaneAccordions	= $.layout.callbacks.resizePaneAccordions;
@@ -255,6 +204,7 @@
 
 				// OUTER/PAGE LAYOUT
 				pageLayout = $("body").layout({ // DO NOT use "var pageLayout" here
+                                        initClosed: true,
 					"north": {
 						"resizable": false,
 						"slidable": false, 
@@ -264,12 +214,14 @@
 					"west": {
 						"size": 450, 
 						"onresize": resizePaneAccordions, // west accordion a child of pane,
+						resizerCursor: "ew-resize"
 					},
 					"east": {
 						"size": 450, 
 						"onresize":	resize2DStructure, // east accordion nested inside a tab-panel
+						resizerCursor: "ew-resize"
 					},
-					"east__initClosed": true,
+					// "east__initClosed": true,
 					"center": {
 						"closable": false,
 						"resizable": true,
@@ -286,8 +238,9 @@
 				$("#accordion-west").accordion({ "heightStyle": "fill" });
 				$("#accordion-east").accordion({ "heightStyle": "fill" });
 
-				// Start with east panel closed
-				//pageLayout.close("east");
+				// display panel accordion names that were set to hidden in the HTML
+				$("[id^='tab-panel-west']").css( "display", "block" );
+				$("[id^='tab-panel-east']").css( "display", "block" );
 
 				// show loading animation
 	    			$("#loading-dialog").dialog({"modal": true});
@@ -296,11 +249,9 @@
 	    			// have to be after dialog() call
 				$("#loading-dialog").css({"min-height": 0, "padding-top": 0});
 
-				// Query for available puzzles, closing the loading dialog when done
-				fetchPuzzles( function () {
-				    $("#loading-dialog").dialog("close");
-				    $(".ui-layout-center > h1").html('Select one or more puzzles from the list on the left.<br><br>Then click on the "Select Columns" button.');
-				});
+				// Add the title to the right tabs.  (Simply hiding them before initialization messed UI Layout up)
+				$("#tab-panel-east-1-text").text("Switch Graph");
+				$("#tab-panel-east-2-text").text("2D Structure");
 
 				initAction();
 			});

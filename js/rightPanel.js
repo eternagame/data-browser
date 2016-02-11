@@ -34,7 +34,7 @@ function updateSele2SecStr(ids, col_num) {
         var row = table.row([ids[i]]).data();
         html += drawSecStr(row, col_num);
     }
-    $("#tab-panel-east-1").html(html);
+    $("#tab-panel-east-2").html(html);
     if (!iframe_flag) {
         for (var i = 0; i < ids.length; i++) {
             var row = table.row([ids[i]]).data();
@@ -62,7 +62,7 @@ function updateSele2Hist(ids, col_num) {
             html += '<p style="color:#000; background-color:#fff;"><i><u>Not gTableData. Switch data not available.</u></i></p></div>';
         }
     }
-    $("#tab-panel-east-2").html(html);
+    $("#tab-panel-east-1").html(html);
 }
 
 // update contents of right-panel
@@ -81,7 +81,7 @@ function initStr2D() {
         syncSele2D();
         clearTimeout(timer_right_pane);
         timer_right_pane = setTimeout(function() {
-            if (pageLayout.state.east.isClosed && sele_indexes.length) { pageLayout.open("east"); }
+            if (pageLayout.state.east.isClosed && !pageLayout.state.east.isHidden && sele_indexes.length) { pageLayout.open("east"); }
         }, 200);
     });
     $("#center-table").on("deselect.dt", function( e, dt, type, indexes ) { 

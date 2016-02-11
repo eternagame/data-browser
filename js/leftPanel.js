@@ -70,23 +70,24 @@ function updateColOrderOpt2Table() {
 function updateColOrderTable2Opt() {
     if (DEBUG) { console.log("reorder, t->o"); }
 
-    // The table's representation of the dat has been rearranged; bring our data structures up to date.
+    // The table's representation of the data has been rearranged; bring our data structures up to date.
     //updateColumnTracking();
 
     var new_order = table.colReorder.order(), old_filter = [], html = '';
     if (DEBUG) { console.log("new order = " + new_order); }
 
     // use original order for assignment, tracked by "id" and "class" names
-    for (var i = 0; i < n_fields; i++) {
-    // !!! Verify this !!!
-        var iSpec = gColumnIndex[gaDownloadedColumns[i]];
-
-        html += $("#col-opt-" + gaDownloadedColumns[new_order[i]])[0].outerHTML;
-        // retain filter input val() for newly created DOM elements
-        if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
-            old_filter.push([parseFloat($("#col-filter-min-" + gaDownloadedColumns[i]).val()), parseFloat($("#col-filter-max-" + gaDownloadedColumns[i]).val())]);
-        } else {
-            old_filter.push([$("#col-filter-str-" + gaDownloadedColumns[i]).val()]);
+    var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
+    if ($("#col-opt-" + gaDownloadedColumns[new_order[i]]).length) {
+        for (var i = 0; i < n_fields; i++) {
+            var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
+            html += $("#col-opt-" + gaDownloadedColumns[new_order[i]])[0].outerHTML;
+            // retain filter input val() for newly created DOM elements
+            if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
+                old_filter.push([parseFloat($("#col-filter-min-" + gaDownloadedColumns[i]).val()), parseFloat($("#col-filter-max-" + gaDownloadedColumns[i]).val())]);
+            } else {
+                old_filter.push([$("#col-filter-str-" + gaDownloadedColumns[i]).val()]);
+            }
         }
     }
 
@@ -95,19 +96,20 @@ function updateColOrderTable2Opt() {
     bindOptBlockEvent();
 
     // restore filter inputs
-    for (var i = 0; i < n_fields; i++) {
-        var iSpec = gColumnIndex[gaDownloadedColumns[i]]; //!!! filter IDs TBD
-        if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
-            $("#col-filter-min-" + gaDownloadedColumns[i]).val(old_filter[i][0]);
-            $("#col-filter-max-" + gaDownloadedColumns[i]).val(old_filter[i][1]);
-        } else {
-            $("#col-filter-str-" + gaDownloadedColumns[i]).val(old_filter[i][0]);
+    if (old_filter.length) {
+        for (var i = 0; i < n_fields; i++) {
+            var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]]; //!!! filter IDs TBD
+            if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
+                $("#col-filter-min-" + gaDownloadedColumns[i]).val(old_filter[i][0]);
+                $("#col-filter-max-" + gaDownloadedColumns[i]).val(old_filter[i][1]);
+            } else {
+                $("#col-filter-str-" + gaDownloadedColumns[i]).val(old_filter[i][0]);
+            }
         }
     }
 
-    // The table's representation of the dat has been rearranged; bring our data structures up to date.
+    // The table's representation of the data has been rearranged; bring our data structures up to date.
     updateColumnTracking();
-
 }
 
 // sync column sorting from left-panel to table
@@ -235,49 +237,16 @@ function bindOptBlockEvent() {
         // prevent overlapping firing of this event!
         // 200 ms delay is OK in performance, and saves a lot of processing when user is typing fast
         clearTimeout(timer_col_filter_keyup);
-        timer_col_filter_keyup = setTimeout(function() {
-            filter_inputs = [];
-            for (var i = 0; i < n_fields; i++) {
-                var iSpec = gColumnIndex[gaDownloadedColumns[i]];
-                if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
-                    // exclude disabled filters
-                    if ($("#col-filter-min-" + gaDownloadedColumns[i]).is(":disabled")) { continue; }
-                    var min = parseFloat($("#col-filter-min-" + gaDownloadedColumns[i]).val());
-                    var max = parseFloat($("#col-filter-max-" + gaDownloadedColumns[i]).val());
-                    // don't waste time on getting data and intersect if both NaN
-                    if (isNaN(min) && isNaN(max)) { continue; }
-                    filter_inputs.push([i, min, max]);
-                } else {
-                    if ($("#col-filter-str-" + gaDownloadedColumns[i]).is(":disabled")) { continue; }
-                    var regex = $("#col-filter-str-" + gaDownloadedColumns[i]).val();
-                    if (regex.length == 0) { continue; }
-                    // decide whether valid regex
-                    // var flag = true;
-                    if ($("#regex-toggle").is(":checked")) {
-                        try { 
-                            regex = new RegExp(regex, "i");
-                            // dead spot of regex chars
-                            // if (regex.replace(/\^/g,"").replace(/\$/g,"").replace(/\./g,"").replace(/\|/g,"").replace(/\{/g,"").replace(/\}/g,"").length == 0) { throw 0; }
-                        } catch(e) {
-                            // ignore invalid regex
-                            continue;
-                            // flag = false;
-                        }
-                    } else {
-                        regex = regex.toLowerCase();
-                    }
-                    // filter_inputs.push([i, regex, flag]);
-                    filter_inputs.push([i, regex]);
-                }
-            }
+        timer_col_filter_keyup = setTimeout( function () {
+            build_filter_inputs_array();
             table.draw();
         }, 150);
 
         // store filters in local storage
-        if (typeof(Storage) !== "undefined") {
+        if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence) {
             for (var i = 0; i < n_fields; i++) {
-                var iSpec = gColumnIndex[gaDownloadedColumns[i]];
-                if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
+                var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
+                if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
                     localStorage.setItem("col-filter-min-" + gaDownloadedColumns[i], parseFloat($("#col-filter-min-" + gaDownloadedColumns[i]).val()));
                     localStorage.setItem("col-filter-max-" + gaDownloadedColumns[i], parseFloat($("#col-filter-max-" + gaDownloadedColumns[i]).val()));
                 } else {
@@ -290,15 +259,17 @@ function bindOptBlockEvent() {
 }
 
 // generate left-panel column display options from meta data; called once on init()
-function drawColDisplayOptions(columnSpecification) {
+function drawColDisplayOptions(gaColumnSpecification) {
+    if (pageLayout.state.west.isHidden) return;
+    var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
     var html = "";
     for (var i = 0; i < n_fields; i++) {
-        var iSpec = gColumnIndex[gaDownloadedColumns[i]];
+        var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
         var columnName = gaDownloadedColumns[i];
         html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="col-opt-' + columnName + '">';
         html += '<div class="gray-button-bg"></div>';
-        html += '<div class="column-title"><label><input type="checkbox" id="col-sort-chk-' + columnName +'" class="col-sort-chk"/>' + columnSpecification[iSpec][0] + '</label><span style="float:right;">';
-        if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
+        html += '<div class="column-title"><label><input type="checkbox" id="col-sort-chk-' + columnName +'" class="col-sort-chk"/>' + gaColumnSpecification[iSpec][0] + '</label><span style="float:right;">';
+        if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
             html += '<input id="col-filter-min-' + gaDownloadedColumns[i] + '" type="number" placeholder="min" class="col-filter-num">&nbsp;&nbsp;<input id="col-filter-max-' + gaDownloadedColumns[i] + '" type="number" placeholder="max" class="col-filter-num"/>';
         } else {
             html += '<input id="col-filter-str-' + gaDownloadedColumns[i] + '" type="text" placeholder="" class="col-filter-txt"/>';
@@ -308,10 +279,10 @@ function drawColDisplayOptions(columnSpecification) {
     $("#displayed-info").html(html);
 
     // retrieve filters from local storage
-    if (typeof(Storage) !== "undefined") {
+    if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence) {
         for (var i = 0; i < n_fields; i++) {
-            var iSpec = gColumnIndex[gaDownloadedColumns[i]];
-            if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
+            var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
+            if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
                 $("#col-filter-min-" + gaDownloadedColumns[i]).val(localStorage.getItem("col-filter-min-" + gaDownloadedColumns[i]));
                 $("#col-filter-max-" + gaDownloadedColumns[i]).val(localStorage.getItem("col-filter-max-" + gaDownloadedColumns[i]));
             } else {
@@ -384,6 +355,8 @@ function initColOpt() {
             $("#loading-dialog").css({"min-height": 0, "padding-top": 0});
         }
         setTimeout(function() {
+
+/* Not sure what this was trying to protect against, but it causes more problems than it solves now (2/5/16)
             // see if any column is displayed before
             var flag = false;
             for (var i = 0; i < n_fields; i++) {
@@ -392,12 +365,14 @@ function initColOpt() {
                     break;
                 }
             }
+*/
             $("input[id^='col-sort-chk-']").prop("checked", true);
             $("[id^='col-filter-']").removeAttr("disabled");
             // if tabel init() with no column selected, it will always be empty even if all are checked now
             // so refresh the page to show things
-            if (!flag) { location.reload(); }
+            //if (!flag) { location.reload(); } //!!! this is causing problems.  What problem was it supposed to solve?  See note above
             updateColSeleOpt2Table();
+            $("#loading-dialog").dialog("close");
         }, 5);
     });
 
@@ -411,6 +386,7 @@ function initColOpt() {
             $("input[id^='col-sort-chk-']").prop("checked", false);
             $("[id^='col-filter-']").attr("disabled", "disabled");
             updateColSeleOpt2Table();
+            $("#loading-dialog").dialog("close");
         }, 5);
     });
 
@@ -429,16 +405,55 @@ function initColOpt() {
 
 }
 
+function build_filter_inputs_array () {
+    filter_inputs = [];
+    var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
+    for (var i = 0; i < n_fields; i++) {
+        var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
+        if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
+            // exclude disabled filters
+            if ($("#col-filter-min-" + gaDownloadedColumns[i]).is(":disabled")) { continue; }
+            var min = parseFloat($("#col-filter-min-" + gaDownloadedColumns[i]).val());
+            var max = parseFloat($("#col-filter-max-" + gaDownloadedColumns[i]).val());
+            // don't waste time on getting data and intersect if both NaN
+            if (isNaN(min) && isNaN(max)) { continue; }
+            filter_inputs.push([i, min, max]);
+        } else {
+            if ($("#col-filter-str-" + gaDownloadedColumns[i]).is(":disabled")) { continue; }
+            var regex = $("#col-filter-str-" + gaDownloadedColumns[i]).val();
+            if (!(regex && regex.length)) { continue; }
+            // decide whether valid regex
+            // var flag = true;
+            if ($("#regex-toggle").is(":checked")) {
+                try { 
+                    regex = new RegExp(regex, "i");
+                    // dead spot of regex chars
+                    // if (regex.replace(/\^/g,"").replace(/\$/g,"").replace(/\./g,"").replace(/\|/g,"").replace(/\{/g,"").replace(/\}/g,"").length == 0) { throw 0; }
+                } catch(e) {
+                    // ignore invalid regex
+                    continue;
+                    // flag = false;
+                }
+            } else {
+                regex = regex.toLowerCase();
+            }
+            // filter_inputs.push([i, regex, flag]);
+            filter_inputs.push([i, regex]);
+        }
+    }
+}
+
 // initiate left-panel filter inputs
 function initFilterInput() {
     // custom search/filter function for all columns together
     $.fn.dataTable.ext.search.push(function( settings, data, dataIndex ) {
         // return boolean for whether row meets filter
         var flag = true;
+        var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
         for (var i = 0; i < filter_inputs.length; i++) {
             var idx = filter_inputs[i][0];
-            var iSpec = gColumnIndex[gaDownloadedColumns[idx]];
-            if (columnSpecification[iSpec][1] == "int" || columnSpecification[iSpec][1] == "float") {
+            var iSpec = gColumnsRowIndex[gaDownloadedColumns[idx]];
+            if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
                 var min = filter_inputs[i][1];
                 var max = filter_inputs[i][2];
                 var num = extractNumCell(data[table.column(".td_def_" + idx).index()]);
@@ -454,6 +469,9 @@ function initFilterInput() {
                 }
             }
         }
+
+        // Added so filters are applied when table is first displayed
+        build_filter_inputs_array();
         return flag;
     });
 
@@ -476,15 +494,17 @@ function initFilterInput() {
     });
 
     $("#regex-toggle").on("change", function() {
-        localStorage.setItem("col-regex-toggle", $(this).is(":checked"));
-        if ($(this).is(":checked")) {
-            $("[id^='col-filter-str-']").attr("placeholder", "regex");
-        } else {
-            $("[id^='col-filter-str-']").attr("placeholder", "");
+        if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence) {
+            localStorage.setItem("col-regex-toggle", $(this).is(":checked"));
+            if ($(this).is(":checked")) {
+                $("[id^='col-filter-str-']").attr("placeholder", "regex");
+            } else {
+                $("[id^='col-filter-str-']").attr("placeholder", "");
+            }
         }
     });
     // retrieve regex toggle state
-    if (typeof(Storage) !== "undefined") {
+    if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence) {
         if (localStorage.getItem("col-regex-toggle") == "true") {
             $("#regex-toggle").trigger("click");
         }
@@ -509,12 +529,12 @@ function drawPuzzleSetOptions(gaPuzzles) {
     $("#puzzle-list").html(html);
 
     // retrieve filters from local storage
-    if (typeof(Storage) !== "undefined") {
+    if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence) {
         for (var i = 0; i < gaPuzzles.length; i++) {
             if (localStorage.getItem("lab-chk-" + gaPuzzles[i][puzzleIDIndex]) == "true") {
                 $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).trigger("click");
                 // has to do this since events are not bind yet
-                $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).parent().addClass("light-green-font");
+                $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).parent(); // .addClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
                 gaSelectedPuzzles.push(gaPuzzles[i][puzzleIDIndex]);
             }
         }
@@ -533,11 +553,25 @@ function drawPuzzleSetOptions(gaPuzzles) {
 */
 }
 
+function updateCenterTitle() {
+    // update center panel title with names of selected puzzles
+    if ( pageLayout.state.west.isHidden ) return;
+    var myPuzzleNames = [];
+    $("[id^='lab-chk-']").each( function(){
+        //myPuzzleNames.push( /<b>(.*)<\/b>/.exec($(this).html())[1] );
+        if($(this).is(":checked"))
+            myPuzzleNames.push( /<b>(.*)<\/b>/.exec($(this).parent().html())[1]);
+    });
+    $("#lab-title").html( myPuzzleNames.join(", ") );
+}
+
 // initiate left-panel puzzle selections
 function initPuzzleSelections() {
     var puzzleIDIndex = gPuzzleIndex['Puzzle_ID'];
 
     drawPuzzleSetOptions(gaPuzzles);
+
+    updateCenterTitle();
 
     // when puzzle selection changes
     $("[id^='lab-chk-']").on("click", function() {
@@ -546,24 +580,17 @@ function initPuzzleSelections() {
 
         // render color change green/gray
         if ($(this).is(":checked")) {
-            $(this).parent().addClass("light-green-font");
+            // $(this).parent().addClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
             gaSelectedPuzzles.push(id);
         } else {
-            $(this).parent().removeClass("light-green-font");
+            $(this).parent().removeClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
             gaSelectedPuzzles.splice(gaSelectedPuzzles.indexOf(id), 1);
         }
-        // update list of selected puzzles in the center panel
-	//
-	// !!! TODO: put only selected puzzles in title
-        // update center panel title with names of selected puzzles
-        var myPuzzleNames = [];
-        $("[id^='lab-chk-']").parent().each( function(){
-            myPuzzleNames.push( /<b>(.*)<\/b>/.exec($(this).html())[1] );
-        });
-        $("#lab-title").html( "Puzzles - " + myPuzzleNames.join(", ") );
         
+        updateCenterTitle();
+
         // save to localStorage
-        if (typeof(Storage) !== "undefined") {
+        if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence) {
             for (var i = 0; i < gaPuzzles.length; i++) {
                 localStorage.setItem("lab-chk-" + gaPuzzles[i][puzzleIDIndex], $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).is(":checked"));
             }
@@ -584,6 +611,11 @@ function initPuzzleSelections() {
     // new selection is saved in localStorage, upon refresh, it retrieves the info and save as gaSelectedPuzzles, then compose the data query
     $("#column-select-btn").on("click", function() {
         if (gaSelectedPuzzles.length) {
+            gProjectIDs = {};
+            for (var i = 0; i < gaPuzzles.length; i++) {
+                if ($("#lab-chk-" + gaPuzzles[i][3]).is(":checked"))
+                    gProjectIDs[gaPuzzles[i][0]] = true;
+            } 
             fetchColumns( function() {
 		$(".ui-layout-center > h1").html('Now select one or more columns to download.<br><br>Then click on the "Load Data" button.');
 		$("#tab-panel-west-2").click();

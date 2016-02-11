@@ -12,6 +12,12 @@
 .ui-layout-toggler:hover {
 	background-color: #fff !important;
 }
+
+/* want to decrease the accordion header height, but this isn't having any effect */
+.ui-accordion .ui-accordion-header {
+	height: 30px !important;
+}
+
 /* override left-panel thick paddings */
 .ui-accordion-content {
 	padding-left: 15px !important;
@@ -182,7 +188,7 @@ input:disabled {
 
 .ui-tabs-panel {
 	padding: 0em 1em !important;
-	border-top: 3pt solid #2191c0 !important;
+	border-bottom: 3pt solid #2191c0 !important;
 }
 
 /* some color class */

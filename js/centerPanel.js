@@ -90,13 +90,13 @@ function drawSeqRuler() {
 }
 
 // generate column <th> based on meta data; called once on init()
-function drawColHeaders(columnSpecification) {
+function drawColHeaders(gaColumnSpecification) {
     var html_1 = "<tr>", html_2 = "<tr>";
     // for field names of two words, wrap it into two lines
     // for (var i = 0; i < n_fields; i++) {
     for (var i = 0; i < n_fields; i++) {
-        var iSpec = gColumnIndex[gaDownloadedColumns[i]];
-        var col = columnSpecification[iSpec][0];
+        var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
+        var col = gaColumnSpecification[iSpec][0];
         if (col.indexOf(" ") != -1 && col.toLowerCase() != "sequence") {
             html_1 += '<th class="th_def_' + i + '">' + col.substring(0, col.indexOf(" ")) + '</th>';
             html_2 += '<th>' + col.substring(col.indexOf(" ") + 1, col.length) + '</th>';
@@ -112,10 +112,10 @@ function drawColHeaders(columnSpecification) {
 }
 
 // correct data types based on header meta; currently not called
-function convertTypes(columnSpecification) {
+function convertTypes(gaColumnSpecification) {
 	for (var i = 0; i < gTableData.length; i++) {
 		for (var j = 0; j < gTableData[i].length; j++) {
-			if (columnSpecification[j][1] != "string" && typeof(gTableData[i][j]) != columnSpecification[j][1]) {
+			if (gaColumnSpecification[j][1] != "string" && typeof(gTableData[i][j]) != gaColumnSpecification[j][1]) {
 				gTableData[i][j] = Number(gTableData[i][j]);
 			}
 		}
@@ -142,24 +142,27 @@ function initColClass() {
     $.fn.dataTable.ext.type.order["num-filtered-pre"] = function ( d ) { return extractNumCell(d); };
 
         var obj = [];
+        var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
+        var specialIndex = gColumnsColumnIndex["Siqi_sub_3"];
+        var groupIndex = gColumnsColumnIndex["Siqi_sub_4"];
 
         for (var i = 0; i < n_fields; i++) {
-            var iSpec = gColumnIndex[gaDownloadedColumns[i]];
-            var col_type = columnSpecification[iSpec][1];
+            var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
+            var col_type = gaColumnSpecification[iSpec][dataTypeIndex];
             // internally reference columns as td_def_*, 0-indexed
             var class_name = "td_def_" + i;
             // add to-be-colored group class name
-            if (columnSpecification[iSpec].length > 3 && columnSpecification[iSpec][3]) {
-                if (isNaN(parseInt(columnSpecification[iSpec][3]))) {
-                    class_name += ' ' + columnSpecification[iSpec][3];
+            if (gaColumnSpecification[iSpec].length > specialIndex && gaColumnSpecification[iSpec][specialIndex]) {
+                if (isNaN(parseInt(gaColumnSpecification[iSpec][specialIndex]))) {
+                    class_name += ' ' + gaColumnSpecification[iSpec][specialIndex];
                 } else {
-                    class_name += ' to-be-colored-' + columnSpecification[iSpec][3];
-                    if (columnSpecification[iSpec][3] == i) { class_name += ' master'; }
+                    class_name += ' to-be-colored-' + gaColumnSpecification[iSpec][specialIndex];
+                    if (gaColumnSpecification[iSpec][specialIndex] == i) { class_name += ' master'; }
                 }
             }
             // add group-percentage- group class name
-            if (columnSpecification[i].length > 4 && columnSpecification[iSpec][4]) {
-                class_name += ' group-percentage-' + columnSpecification[iSpec][4];
+            if (gaColumnSpecification[i].length > groupIndex && gaColumnSpecification[iSpec][groupIndex]) {
+                class_name += ' group-percentage-' + gaColumnSpecification[iSpec][groupIndex];
             }
 
             // format for numeric columns
@@ -175,12 +178,15 @@ function initColClass() {
 // assign columnDefs of coloring and suffix etc.
 function initColRender() {
     var obj = [];
+    var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
+    var suffixIndex = gColumnsColumnIndex["Siqi_sub_2"];
+    var specialIndex = gColumnsColumnIndex["Siqi_sub_3"];
     for (var i = 0; i < n_fields; i++) {
-        var iSpec = gColumnIndex[gaDownloadedColumns[i]];
-        var col_type = columnSpecification[iSpec][1];
+        var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
+        var col_type = gaColumnSpecification[iSpec][dataTypeIndex];
 
         // special rendering for "Sequence" column (nucleotide coloring)
-        if (columnSpecification[iSpec].length > 3 && columnSpecification[iSpec][3] == "sequence") {
+        if (gaColumnSpecification[iSpec].length > specialIndex && gaColumnSpecification[iSpec][specialIndex] == "sequence") {
             obj.push({
                 "targets": "th_def_" + i, 
                 "render": function(data, type, row, meta) {
@@ -207,17 +213,17 @@ function initColRender() {
                         // for when first table init, variable "table" not assigned yet
                         if(typeof table === 'undefined') { table = $("#center-table").DataTable(); };
                         var idx = table.colReorder.order()[meta['col']];	
-                        var iSpec = gColumnIndex[gaDownloadedColumns[idx]];
+                        var iSpec = gColumnsRowIndex[gaDownloadedColumns[idx]];
                         // round float to 2 decimals
-                        if (columnSpecification[iSpec][1] == 'float') {
+                        if (gaColumnSpecification[iSpec][dataTypeIndex] == 'float') {
                             data = parseFloat(data).toFixed(2);
                         } else {
                             data = parseInt(data);
                         }
                         // add suffix string in gray if exists
                         var suffix = '';
-                        if (columnSpecification[iSpec].length > 2 && columnSpecification[iSpec][2].length) {
-                            suffix = ' <i style="color:#888;">' + columnSpecification[iSpec][2] + '</i>';
+                        if (gaColumnSpecification[iSpec].length > suffixIndex && gaColumnSpecification[iSpec][suffixIndex].length) {
+                            suffix = ' <i style="color:#888;">' + gaColumnSpecification[iSpec][suffixIndex] + '</i>';
                         }
                         return '<span class="td-num">' + data + suffix + '&nbsp;&nbsp;</span>';
                     } 
@@ -231,10 +237,10 @@ function initColRender() {
 
                         var idx = meta['col']; // i.e. DataTable's column index 
                         idx = table.colReorder.order()[idx];
-                        var iSpec = gColumnIndex[gaDownloadedColumns[idx]];
+                        var iSpec = gColumnsRowIndex[gaDownloadedColumns[idx]];
                         var suffix = '';
-                        if (columnSpecification[iSpec].length > 2 && columnSpecification[iSpec][2].length) {
-                            suffix = ' <i style="color:#888;">' + columnSpecification[iSpec][2] + '</i>';
+                        if (gaColumnSpecification[iSpec].length > suffixIndex && gaColumnSpecification[iSpec][suffixIndex].length) {
+                            suffix = ' <i style="color:#888;">' + gaColumnSpecification[iSpec][suffixIndex] + '</i>';
                         }
                         // truncate text and enable expand-when-hover, controlled by CSS
                         return '<p class="txt-hover">' + data + suffix + '</p>';
@@ -277,15 +283,17 @@ function initTable() {
         },
         // custom buttons above the table
         "buttons": [
+/*
             {
                 "extend": "selectNone",
                 "text": "Unselect Rows",
                 "className": "purple-button seq-button table-button"
             },
+*/
             {
-                "text": "Labs",
+                "text": "Puzzles",
                 "action": function ( e, dt, node, config ) {
-                    if (pageLayout.state.west.isClosed) {
+                    if (pageLayout.state.west.isClosed && !pageLayout.state.west.isHidden) {
                         pageLayout.toggle("west");
                         $("#tab-panel-west-1").trigger("click");
                     } else {
@@ -330,6 +338,7 @@ function initTable() {
                 },
                 "className": "green-button seq-button table-button"
             },
+/*
             {
                 "text": "Download",
                 "action": function ( e, dt, node, config ) {
@@ -338,6 +347,7 @@ function initTable() {
                 },
                 "className": "blue-button seq-button table-button"
             },
+*/
         ],
 
         "initComplete": function() { 
@@ -346,24 +356,23 @@ function initTable() {
             // remove "Loading" placeholder	// Move to pair with $(".ui-layout-center > h1").html("Loading Table...");
 
             $(".ui-layout-center > h1").remove();
-    // init side panels
-    initStr2D();
-    initColOpt();
-    initFilterInput();
-    // move buttons to same line with lab title
-    table.buttons().container().prependTo($("#button-container"));
-    $(".dt-buttons").removeClass("dt-buttons");
 
-/* Move the decision about what panels to open to a higher level
-    // slide-out effect of panels on init()
-    pageLayout.close("south"); // Still needed?, even though we're not currently using the south panel
-    //pageLayout.close("west"); 
-    pageLayout.close("east");
-*/
-    resizeCenterTable();
-
-    // make sure table size and 2D JS size are right
-    $(window).on("resize", function() { resizeCenterTable(); });
+            // init side panels
+            initStr2D();
+            initColOpt();
+            initFilterInput();
+            // move buttons to same line with lab title
+            if (gOptions.example) {
+                $(".dt-buttons").remove();
+            }
+            else {
+                table.buttons().container().prependTo($("#table-button-container"));
+                $(".dt-buttons").removeClass("dt-buttons"); // Why?
+            }
+            resizeCenterTable();
+    
+            // make sure table size and 2D JS size are right
+            $(window).on("resize", function() { resizeCenterTable(); });
         },
         "drawCallback": function() { 
             // draw horizontal separators every 5 rows
@@ -412,8 +421,12 @@ function fetchAllData( continuation )
 			initPuzzleSelections();
 		},
 		"error": function(){
-			// put up some fake data
-			this.success( fakePuzzleResponse );
+                        var errorDetails = data.error;
+                        alert("Download of puzzle descriptions failed: " + errorDetails.message);
+                        throw( errorDetails );
+
+			// for debugging, put up some fake data
+			//this.success( fakePuzzleResponse );
 		},
 		"complete": function() {
 			// Query for columns present in selected puzzles
@@ -438,16 +451,16 @@ function fetchAllData( continuation )
 							dataAjaxSuccess(data);
 							n_fields = gaColumnsToDownload.length; // n_fields should go away? !!!
 							// get group percentages in array
-							for (var i in Object.keys(columnSpecification)) {
-							    if (columnSpecification[i].length > 4 && columnSpecification[i][4]) {
-							        if (col_groups.indexOf(columnSpecification[i][4]) == -1) {
-						            		col_groups.push(columnSpecification[i][4]);
+							for (var i in Object.keys(gaColumnSpecification)) {
+							    if (gaColumnSpecification[i].length > 4 && gaColumnSpecification[i][4]) {
+							        if (col_groups.indexOf(gaColumnSpecification[i][4]) == -1) {
+						            		col_groups.push(gaColumnSpecification[i][4]);
 						        	}
 							    }
 							}
 							// init column options and headers according to query
-							drawColDisplayOptions(columnSpecification);
-							drawColHeaders(columnSpecification);
+							drawColDisplayOptions(gaColumnSpecification);
+							drawColHeaders(gaColumnSpecification);
 							$(".ui-layout-center > h1").html("Loading Table...");
 						},
 						"error": function(){
@@ -457,7 +470,7 @@ function fetchAllData( continuation )
 						"complete": function() {
 							// manually converting data types
 							// don't need this since the sorting takes text() of <td> regardless of source data
-							// convertTypes(columnSpecification);
+							// convertTypes(gaColumnSpecification);
 
 							if (tableNotLoaded)
 							    if (continuation) continuation()
@@ -524,16 +537,16 @@ function fetchData(  continuation ) {
 	    dataAjaxSuccess(data);
 	    n_fields = gaColumnsToDownload.length; // n_fields should go away? !!!
 	    // get group percentages in array
-	    for (var i in Object.keys(columnSpecification)) {
-		if (columnSpecification[i].length > 4 && columnSpecification[i][4]) {
-		    if (col_groups.indexOf(columnSpecification[i][4]) == -1) {
-	                col_groups.push(columnSpecification[i][4]);
+	    for (var i in Object.keys(gaColumnSpecification)) {
+		if (gaColumnSpecification[i].length > 4 && gaColumnSpecification[i][4]) {
+		    if (col_groups.indexOf(gaColumnSpecification[i][4]) == -1) {
+	                col_groups.push(gaColumnSpecification[i][4]);
 	            }
 		}
 	    }
 	    // init column options and headers according to query
-	    drawColDisplayOptions(columnSpecification);
-	    drawColHeaders(columnSpecification);
+	    drawColDisplayOptions(gaColumnSpecification);
+	    drawColHeaders(gaColumnSpecification);
 	    $(".ui-layout-center > h1").html("Loading Table...");
 	},
 	"error": function(){
@@ -543,14 +556,14 @@ function fetchData(  continuation ) {
 	"complete": function() {
 	    // manually converting data types
 	    // don't need this since the sorting takes text() of <td> regardless of source data
-	    // convertTypes(columnSpecification);
-	    if (continuation) continuation()
+	    // convertTypes(gaColumnSpecification);
 
 	    if (tableNotLoaded)
 		setTimeout(function() {
 		    initTable();
 		        $("#loading-dialog").dialog("close");
 		        tableNotLoaded = false;                          
+	            if (continuation) continuation();
 		}, 50);
 	    // apply retrieved filter when loaded.
 	    /* These ids don't exist any more.  What did this code actually do?
@@ -590,66 +603,117 @@ function getColNums() {
     };
 }
 
-    //--------------------------------------------------------------------
-    // Check for, and act on, any URL query string coming from the iframe container
-    //-------------------------------------------------------------------- 
-    var queryString;
+//--------------------------------------------------------------------
+// Check for, and act on, any URL query string coming from the iframe container
+//-------------------------------------------------------------------- 
+var queryString;
 
-    // Send request to parent
-    function requestQueryString () {
-       window.parent.postMessage("queryString?", "*");
-    }
+// Send request to parent
+function requestQueryString () {
+   window.parent.postMessage("queryString?", "*");
+}
 
-    // Record the response
-    function receiveMessage(event)
-    {
-        queryString = event.data;
-    }
+// Record the response
+function receiveMessage(event)
+{
+    queryString = event.data;
+}
 
-    // Set things in motion
-    function asyncGetQueryString( continuation ) {
-        // If the window is its own parent, there is no iframe.  Get the query string from the window itself
-        if (window.parent == window) {
-            if (location.search)
-                queryString = "queryString:" + location.search;
-	    setTimeout( function() {
+// Set things in motion
+function asyncGetQueryString( continuation ) {
+    // If the window is its own parent, there is no iframe.  Get the query string from the window itself
+    if (window.parent == window) {
+        if (location.search) {
+            queryString = "queryString:" + location.search;
+            setTimeout( function() {
                 continuation( queryString )
             }, 0 );
-        } else {        
-            // Prepare for response
-            window.addEventListener("message", receiveMessage, false);
-            // Ask parent window to send query string
-            requestQueryString ();
-            // Wait for 20 ms for a response from parent
-            if (continuation) {
-	        setTimeout( function() {
-                    continuation( queryString )
-                }, 20 );
-            }
-        }
-    }
-
-    // Act on the query string
-    function processQueryString( queryString ) {
-        // Parse the options from the query string
-        if (queryString) {
-            console.log("iframe received '" + queryString + "'");
-            var options = {};
-            for (i in allOptions = location.search.substring(1).split("&")) { 
-                var oneOption = allOptions[i].split("="); 
-                options[oneOption[0]]=oneOption[1]
-            }
-            // 
-            if (options.exec && options.exec == "fetchAllData") fetchAllData( function() {
-                    $("#tab-panel-west-3").click(); // Open Display Control accordion
-                });
-
-        
         }
         else {
-            console.log("No queryString received. Let things take their natural course.");
+				// Query for available puzzles, closing the loading dialog when done
+				fetchPuzzles( function () {
+				    $("#loading-dialog").dialog("close");
+				    $(".ui-layout-center > h1").html('Select one or more puzzles from the list on the left.<br><br>Then click on the "Select Columns" button.');
+				    // Open the left panel.  Nothing more will happen until the user takes action
+				    pageLayout.toggle("west");
+				});
+
+        }
+    } else {        
+        // Prepare for response
+        window.addEventListener("message", receiveMessage, false);
+        // Ask parent window to send query string
+        requestQueryString ();
+        // Wait for 20 ms for a response from parent
+        if (continuation) {
+	        setTimeout( function() {
+                continuation( queryString )
+            }, 20 );
         }
     }
+}
+// Query constraints are collected in the queryConstraints, which has members corresponding to data column names 
+var queryConstraints = {};
+// Act on the query string
+
+function processQueryString( queryString ) {
+    // Parse the options from the query string
+    if (queryString) {
+        console.log("iframe received '" + queryString + "'");
+        gOptions = {};
+        for (i in allOptions = location.search.substring(1).split("&")) { 
+            var oneOption = allOptions[i].split("="); 
+            gOptions[oneOption[0]]=oneOption[1].split(',');
+        }
+        // options now has a property for each option set by the query string
+        if (gOptions.example) {
+            switch (gOptions.example[0]) {
+              case "1": 
+                gOptions.lock = ["panel-left", "panel-right"]; //!!!
+                overrideQueryIDs( "Example-1" );  // Special database
+                gOptions.noPersistence = true;    // Bypass persistence to/from localStorage
+                $("#lab-title").html( "Exclusion 1" );
+                break;
+            }
+        }
+
+        // Check for locking of capabilities
+        if (gOptions.lock) {
+            for (var t = 0; t < gOptions.lock.length; t++) {
+                switch (gOptions.lock[t]) {
+                  case "panel-left":
+                    pageLayout.hide("west")
+                    break;
+                  case "panel-right":
+                    pageLayout.hide("east")
+                    break;
+                }
+            }
+        }
+
+        // special case for examples
+        if (gOptions.example && gOptions.example[0] == "1") {
+            // $(".dt-button").remove(); // This is too early; they haven't been created yet.
+            fetchAllData( );
+        }
+ 
+        // The exec option was for testing; its long-term role is uncertain
+        if (gOptions.exec && gOptions.exec == "fetchAllData") fetchAllData( function() {
+                $("#tab-panel-west-3").click(); // Open Display Control accordion
+        });
+       
+        // The Designer_Name option is used for limiting the download (or should it be the filter?) to one a specific player (or players)
+        // Id enabled, it needs to be made more complete in terms of setting up left panel selections
+        if (gOptions.Designer_Name){
+            queryConstraints.Designer_Name = gOptions;    //!!! can't be right (?)  
+        };       
+    }
+    else {
+        console.log("No queryString received. Let things take their natural course.");
+        // Open the left panel
+        pageLayout.toggle("west");
+    }
+}
 
 // Initiate the interaction with the player, based on the absence/presence/content of the query string.
 // The query string can come directly from the window or indirectly from the parent Eterna container.
