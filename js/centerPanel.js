@@ -273,6 +273,7 @@ function initTable() {
             "displayBuffer": 2,
         },
 
+        "buttons": [], // add after initialization
         "columns": initColClass(),
         "columnDefs": initColRender(),
 
@@ -281,74 +282,6 @@ function initTable() {
             "items": "row",
             "selector": "td" // does not work at all!
         },
-        // custom buttons above the table
-        "buttons": [
-/*
-            {
-                "extend": "selectNone",
-                "text": "Unselect Rows",
-                "className": "purple-button seq-button table-button"
-            },
-*/
-            {
-                "text": "Puzzles",
-                "action": function ( e, dt, node, config ) {
-                    if (pageLayout.state.west.isClosed && !pageLayout.state.west.isHidden) {
-                        pageLayout.toggle("west");
-                        $("#tab-panel-west-1").trigger("click");
-                    } else {
-                        if ($("#tab-panel-west-1").parent().attr("aria-selected") == "true") {
-                            pageLayout.toggle("west");
-                        } else {
-                            $("#tab-panel-west-1").trigger("click");
-                        }
-                    }
-                },
-                "className": "green-button seq-button table-button"
-            },
-            {
-                "text": "Columns",
-                "action": function ( e, dt, node, config ) {
-                    if (pageLayout.state.west.isClosed) {
-                        pageLayout.toggle("west");
-                        $("#tab-panel-west-2").trigger("click");
-                    } else {
-                        if ($("#tab-panel-west-2").parent().attr("aria-selected") == "true") {
-                            pageLayout.toggle("west");
-                        } else {
-                            $("#tab-panel-west-2").trigger("click");
-                        }
-                    }
-                },
-                "className": "green-button seq-button table-button"
-            },
-            {
-                "text": "Display",
-                "action": function ( e, dt, node, config ) {
-                    if (pageLayout.state.west.isClosed) {
-                        pageLayout.toggle("west");
-                        $("#tab-panel-west-3").trigger("click");
-                    } else {
-                        if ($("#tab-panel-west-3").parent().attr("aria-selected") == "true") {
-                            pageLayout.toggle("west");
-                        } else {
-                            $("#tab-panel-west-3").trigger("click");
-                        }
-                    }
-                },
-                "className": "green-button seq-button table-button"
-            },
-/*
-            {
-                "text": "Download",
-                "action": function ( e, dt, node, config ) {
-                    alert("Data download is not implemented yet.")
-                    // window.open("/data/synthesis" + id + ".tsv", "Download");
-                },
-                "className": "blue-button seq-button table-button"
-            },
-*/
-        ],
 
         "initComplete": function() { 
             // draw sequence numbering once on init
@@ -363,11 +296,81 @@ function initTable() {
             initFilterInput();
             // move buttons to same line with lab title
             if (gOptions.example) {
-                $(".dt-buttons").remove();
+                //$(".dt-buttons").remove();
             }
             else {
+                new $.fn.dataTable.Buttons( table, {
+//!!!!
+                        // custom buttons above the table
+                        "buttons": [
+/*                            {
+                                "extend": "selectNone",
+                                "text": "Unselect Rows",
+                                "className": "purple-button seq-button table-button"
+                            },
+*/
+                            {
+                                "text": "Puzzles",
+                                "action": function ( e, dt, node, config ) {
+                                    if (pageLayout.state.west.isClosed && !pageLayout.state.west.isHidden) {
+                                        pageLayout.toggle("west");
+                                        $("#tab-panel-west-1").trigger("click");
+                                    } else {
+                                        if ($("#tab-panel-west-1").parent().attr("aria-selected") == "true") {
+                                            pageLayout.toggle("west");
+                                        } else {
+                                            $("#tab-panel-west-1").trigger("click");
+                                        }
+                                    }
+                                },
+                                "className": "green-button seq-button table-button"
+                            },
+                            {
+                                "text": "Columns",
+                                "action": function ( e, dt, node, config ) {
+                                    if (pageLayout.state.west.isClosed) {
+                                        pageLayout.toggle("west");
+                                        $("#tab-panel-west-2").trigger("click");
+                                    } else {
+                                        if ($("#tab-panel-west-2").parent().attr("aria-selected") == "true") {
+                                            pageLayout.toggle("west");
+                                        } else {
+                                            $("#tab-panel-west-2").trigger("click");
+                                        }
+                                    }
+                                },
+                                "className": "green-button seq-button table-button"
+                            },
+                            {
+                                "text": "Display",
+                                "action": function ( e, dt, node, config ) {
+                                    if (pageLayout.state.west.isClosed) {
+                                        pageLayout.toggle("west");
+                                        $("#tab-panel-west-3").trigger("click");
+                                    } else {
+                                        if ($("#tab-panel-west-3").parent().attr("aria-selected") == "true") {
+                                            pageLayout.toggle("west");
+                                        } else {
+                                            $("#tab-panel-west-3").trigger("click");
+                                        }
+                                    }
+                                },
+                                "className": "green-button seq-button table-button"
+                            },
+/*
+                            {
+                                "text": "Download",
+                                "action": function ( e, dt, node, config ) {
+                                    alert("Data download is not implemented yet.")
+                                    // window.open("/data/synthesis" + id + ".tsv", "Download");
+                                },
+                                "className": "blue-button seq-button table-button"
+                            },
+*/
+                    ]
+                });
                 table.buttons().container().prependTo($("#table-button-container"));
-                $(".dt-buttons").removeClass("dt-buttons"); // Why?
+                $(".dt-buttons").removeClass("dt-buttons"); // Why remove the clasee?
             }
             resizeCenterTable();
     
@@ -661,7 +664,7 @@ function processQueryString( queryString ) {
     if (queryString) {
         console.log("iframe received '" + queryString + "'");
         gOptions = {};
-        for (i in allOptions = location.search.substring(1).split("&")) { 
+        for (i in allOptions = queryString.split("?")[1].split("&")) { 
             var oneOption = allOptions[i].split("="); 
             gOptions[oneOption[0]]=oneOption[1].split(',');
         }
