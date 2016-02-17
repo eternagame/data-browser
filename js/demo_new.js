@@ -158,14 +158,13 @@ function getDataQuery() {
     // create SELECT list from gaColumnsToDownload array
     var column_selection = "*";	// Not really a supported query, but occasionally useful for debugging
     if (gaColumnsToDownload.length > 0) {
-	var tmp = [];
-	for (var i = 0; i < gaColumnsToDownload.length; i++) tmp[i] = "'" + gaColumnsToDownload[i] + "'";
-	column_selection = tmp.join(",");
+        var tmp = [];
+        for (var i = 0; i < gaColumnsToDownload.length; i++) {
+            tmp[i] = "'" + gaColumnsToDownload[i] + "'";
+        }
+        column_selection = tmp.join(",");
     } else {
-        // UI will enforce selecting at least one column, but just in case ...
         column_selection = "*";
-        $("#loading-dialog").dialog("close");
-        return "";
     }
     // construct URL
 

@@ -21,7 +21,7 @@ function drawColumnSetOptions(gAvailableColumns) {
     $("#column-info").html(html);
 
     // retrieve filters from local storage
-    if (typeof(Storage) !== "undefined") {
+    if (typeof(Storage) !== "undefined" && !gOptions.noPersistence) {
         for (var i = 0; i < gaColumns.length; i++) {
             if (localStorage.getItem("col-choice-" + gaColumns[i][columnNameIndex]) == "true") {
                 $("#col-choice-" + gaColumns[i][columnNameIndex]).trigger("click");
@@ -31,6 +31,12 @@ function drawColumnSetOptions(gAvailableColumns) {
             }
         }
     }
+    else if (gOptions.noPersistence){
+        for (var i = 0; i < gaColumns.length; i++) {
+            gaColumnsToDownload.push(gaColumns[i][columnNameIndex]);
+        }
+    }
+    // !!! What about the first experience, where no column selection has been persisted?  Where is a default set?
 }
 
 // initiate left-panel Column selections
@@ -55,7 +61,7 @@ function initColumnSelections() {
         }
 
         // save to localStorage
-        if (typeof(Storage) !== "undefined") {
+        if (typeof(Storage) !== "undefined" && !gOptions.noPersistence) {
             for (var i = 0; i < gaColumns.length; i++) {
                 localStorage.setItem("col-choice-" + gaColumns[i][columnNameIndex], $("#col-choice-" + gaColumns[i][columnNameIndex]).is(":checked"));
             }
