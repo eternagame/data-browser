@@ -273,6 +273,7 @@ function initTable() {
             "displayBuffer": 2,
         },
 
+        "buttons": [], // add after initialization
         "columns": initColClass(),
         "columnDefs": initColRender(),
 
@@ -281,74 +282,6 @@ function initTable() {
             "items": "row",
             "selector": "td" // does not work at all!
         },
-        // custom buttons above the table
-        "buttons": [
-/*
-            {
-                "extend": "selectNone",
-                "text": "Unselect Rows",
-                "className": "purple-button seq-button table-button"
-            },
-*/
-            {
-                "text": "Puzzles",
-                "action": function ( e, dt, node, config ) {
-                    if (pageLayout.state.west.isClosed && !pageLayout.state.west.isHidden) {
-                        pageLayout.toggle("west");
-                        $("#tab-panel-west-1").trigger("click");
-                    } else {
-                        if ($("#tab-panel-west-1").parent().attr("aria-selected") == "true") {
-                            pageLayout.toggle("west");
-                        } else {
-                            $("#tab-panel-west-1").trigger("click");
-                        }
-                    }
-                },
-                "className": "green-button seq-button table-button"
-            },
-            {
-                "text": "Columns",
-                "action": function ( e, dt, node, config ) {
-                    if (pageLayout.state.west.isClosed) {
-                        pageLayout.toggle("west");
-                        $("#tab-panel-west-2").trigger("click");
-                    } else {
-                        if ($("#tab-panel-west-2").parent().attr("aria-selected") == "true") {
-                            pageLayout.toggle("west");
-                        } else {
-                            $("#tab-panel-west-2").trigger("click");
-                        }
-                    }
-                },
-                "className": "green-button seq-button table-button"
-            },
-            {
-                "text": "Display",
-                "action": function ( e, dt, node, config ) {
-                    if (pageLayout.state.west.isClosed) {
-                        pageLayout.toggle("west");
-                        $("#tab-panel-west-3").trigger("click");
-                    } else {
-                        if ($("#tab-panel-west-3").parent().attr("aria-selected") == "true") {
-                            pageLayout.toggle("west");
-                        } else {
-                            $("#tab-panel-west-3").trigger("click");
-                        }
-                    }
-                },
-                "className": "green-button seq-button table-button"
-            },
-/*
-            {
-                "text": "Download",
-                "action": function ( e, dt, node, config ) {
-                    alert("Data download is not implemented yet.")
-                    // window.open("/data/synthesis" + id + ".tsv", "Download");
-                },
-                "className": "blue-button seq-button table-button"
-            },
-*/
-        ],
 
         "initComplete": function() { 
             // draw sequence numbering once on init
@@ -363,11 +296,81 @@ function initTable() {
             initFilterInput();
             // move buttons to same line with lab title
             if (gOptions.example) {
-                $(".dt-buttons").remove();
+                //$(".dt-buttons").remove();
             }
             else {
+                new $.fn.dataTable.Buttons( table, {
+//!!!!
+                        // custom buttons above the table
+                        "buttons": [
+/*                            {
+                                "extend": "selectNone",
+                                "text": "Unselect Rows",
+                                "className": "purple-button seq-button table-button"
+                            },
+*/
+                            {
+                                "text": "Puzzles",
+                                "action": function ( e, dt, node, config ) {
+                                    if (pageLayout.state.west.isClosed && !pageLayout.state.west.isHidden) {
+                                        pageLayout.toggle("west");
+                                        $("#tab-panel-west-1").trigger("click");
+                                    } else {
+                                        if ($("#tab-panel-west-1").parent().attr("aria-selected") == "true") {
+                                            pageLayout.toggle("west");
+                                        } else {
+                                            $("#tab-panel-west-1").trigger("click");
+                                        }
+                                    }
+                                },
+                                "className": "green-button seq-button table-button"
+                            },
+                            {
+                                "text": "Columns",
+                                "action": function ( e, dt, node, config ) {
+                                    if (pageLayout.state.west.isClosed) {
+                                        pageLayout.toggle("west");
+                                        $("#tab-panel-west-2").trigger("click");
+                                    } else {
+                                        if ($("#tab-panel-west-2").parent().attr("aria-selected") == "true") {
+                                            pageLayout.toggle("west");
+                                        } else {
+                                            $("#tab-panel-west-2").trigger("click");
+                                        }
+                                    }
+                                },
+                                "className": "green-button seq-button table-button"
+                            },
+                            {
+                                "text": "Display",
+                                "action": function ( e, dt, node, config ) {
+                                    if (pageLayout.state.west.isClosed) {
+                                        pageLayout.toggle("west");
+                                        $("#tab-panel-west-3").trigger("click");
+                                    } else {
+                                        if ($("#tab-panel-west-3").parent().attr("aria-selected") == "true") {
+                                            pageLayout.toggle("west");
+                                        } else {
+                                            $("#tab-panel-west-3").trigger("click");
+                                        }
+                                    }
+                                },
+                                "className": "green-button seq-button table-button"
+                            },
+/*
+                            {
+                                "text": "Download",
+                                "action": function ( e, dt, node, config ) {
+                                    alert("Data download is not implemented yet.")
+                                    // window.open("/data/synthesis" + id + ".tsv", "Download");
+                                },
+                                "className": "blue-button seq-button table-button"
+                            },
+*/
+                    ]
+                });
                 table.buttons().container().prependTo($("#table-button-container"));
-                $(".dt-buttons").removeClass("dt-buttons"); // Why?
+                $(".dt-buttons").removeClass("dt-buttons"); // Why remove the clasee?
             }
             resizeCenterTable();
     
@@ -657,22 +660,27 @@ var queryConstraints = {};
 // Act on the query string
 
 function processQueryString( queryString ) {
-    // Parse the options from the query string
+    console.log("iframe received '" + queryString + "'");
+
+    // Remove the leading "queryString:" and/or "?", if present
+    queryString = queryString.replace(/^queryString:/,"").replace(/\?/,"");
+
     if (queryString) {
-        console.log("iframe received '" + queryString + "'");
+        // Parse the options from the query string
         gOptions = {};
-        for (i in allOptions = location.search.substring(1).split("&")) { 
-            var oneOption = allOptions[i].split("="); 
-            gOptions[oneOption[0]]=oneOption[1].split(',');
-        }
+        queryString.split("&").map( function(x){ 
+            var temp = x.split("="); 
+            gOptions[temp[0].trim()] = temp[1].trim() 
+        });
+
         // options now has a property for each option set by the query string
         if (gOptions.example) {
+            gOptions.noPersistence = true;    // Bypass persistence to/from localStorage
             switch (gOptions.example[0]) {
               case "1": 
-                gOptions.lock = ["panel-left", "panel-right"]; //!!!
                 overrideQueryIDs( "Example-1" );  // Special database
-                gOptions.noPersistence = true;    // Bypass persistence to/from localStorage
                 $("#lab-title").html( "Exclusion 1" );
+                gOptions.lock = ["panel-left", "panel-right"];
                 break;
             }
         }
