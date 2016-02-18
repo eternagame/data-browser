@@ -609,7 +609,7 @@ function getColNums() {
 //--------------------------------------------------------------------
 // Check for, and act on, any URL query string coming from the iframe container
 //-------------------------------------------------------------------- 
-var queryString;
+var queryString = "";
 
 // Send request to parent
 function requestQueryString () {
@@ -624,35 +624,22 @@ function receiveMessage(event)
 
 // Set things in motion
 function asyncGetQueryString( continuation ) {
-    // If the window is its own parent, there is no iframe.  Get the query string from the window itself
+    // If the window is its own parent, there is no iframe.  Get the query string from the window's URL
     if (window.parent == window) {
-        if (location.search) {
-            queryString = "queryString:" + location.search;
-            setTimeout( function() {
-                continuation( queryString )
-            }, 0 );
-        }
-        else {
-				// Query for available puzzles, closing the loading dialog when done
-				fetchPuzzles( function () {
-				    $("#loading-dialog").dialog("close");
-				    $(".ui-layout-center > h1").html('Select one or more puzzles from the list on the left.<br><br>Then click on the "Select Columns" button.');
-				    // Open the left panel.  Nothing more will happen until the user takes action
-				    pageLayout.toggle("west");
-				});
-
-        }
+        processQueryString( "queryString:" + location.search );
     } else {        
-        // Prepare for response
+        // Ask the parent window for the query string
         window.addEventListener("message", receiveMessage, false);
-        // Ask parent window to send query string
-        requestQueryString ();
-        // Wait for 20 ms for a response from parent
-        if (continuation) {
-	        setTimeout( function() {
-                continuation( queryString )
-            }, 20 );
-        }
+        // Wait for 100 ms before asking parent window to send query string
+        setTimeout( function () {
+            requestQueryString ();
+            // Wait for another 20 ms for a response from parent
+            if (continuation) {
+                setTimeout( function() {
+                    continuation( queryString )
+                }, 20 );
+            }
+        }, 100); 
     }
 }
 // Query constraints are collected in the queryConstraints, which has members corresponding to data column names 
@@ -717,9 +704,15 @@ function processQueryString( queryString ) {
         };       
     }
     else {
-        console.log("No queryString received. Let things take their natural course.");
-        // Open the left panel
-        pageLayout.toggle("west");
+        console.log("No queryString received. Fetch the available puzzles and let the user take over.");
+
+	// Query for available puzzles, closing the loading dialog when done
+	fetchPuzzles( function () {
+	    $("#loading-dialog").dialog("close");
+	    $(".ui-layout-center > h1").html('Select one or more puzzles from the list on the left.<br><br>Then click on the "Select Columns" button.');
+	    // Open the left panel.  Nothing more will happen until the user takes action
+	    pageLayout.toggle("west");
+	});
     }
 }
 
