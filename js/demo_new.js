@@ -11,11 +11,29 @@ function getStr2(idx) { return table.row(idx).data()[gDataColumnIndex["Structure
 var currentDatabaseVersion = "0.2"; // Defined globally; can be over-ridden by Example<N> cases 
 
 var databaseHistory = {
+   // Distinct databases set aside for each tutorial example.
+   // These are isolated from the main fusion tables so the structure of the main branch development code and database can continue to evolve
+   // without breaking the examples.
+   // At some point, the database API will become stable enough that the examples can be run off the main tables and these special case databases can be retired.
+
+   "Example-1": {
+        PuzzleTable: "1HlluHXYCN4mSbFykGRJzmb5U7VTqOjMlKS6VuPgo",
+        ColumnTable: "1Xhlw0FoPcOzvoWGFHY8IfhRE7cTbgDnQG61FlPiS",
+        DataTable  : "13ztaNl4luy2_tJa5Uqw3AESB1clGbaqZEzimTPqP",
+    },
+   "Example-2": {
+        PuzzleTable: "1KDIXO0KdrucA98E5hcD9RIbU4raphzRsERgVrLeY",
+        ColumnTable: "1xiDwcVEZQeWCXCGsrgLEECVefX6CQijYVPlHGb0_",
+        DataTable  : "1Wjj136RZ-J7nEtchlA4arozajQSGnQLp5TaMjw1K",
+    },
+
     "0.0": {
         PuzzleTable: "1U8t1qye2beaSl70XMTDHYoDznRWeopnOt1eoJy4T",
         ColumnTable: "16Ue5edl-AkRXyxlsTw9BC1ZRNakrgR6f5GEos75L",
         DataTable  : "1kMFbEh1W-Q0GyY2CCJP1lxSWZpuspjdqDUzHMKAJ",
     },
+
+   // These are the main-line development fusion tables
    "0.1": {
         PuzzleTable: "1saGl4liryIYKdt8_O8cwe2s8ZxIJf2uoropV-qTT",
         ColumnTable: "1r-yR0zOOY-ukaiVHsh7njXDCsNu2MesE_d148RLV",
@@ -26,19 +44,7 @@ var databaseHistory = {
         ColumnTable: "1sTS1tFoo4SR7GbVY78-Ed5d8aWpSKPhU8mYFKPbB",
         DataTable  : "1WRLCkorduA-k8WZeUP5aDlHIfcXFprrXLh3LJH2M",
     },
-   "Example-1": {
-        PuzzleTable: "1PW2HkXM9B5r9_zwyBJGcTnWTtYn_LjgnfdXsIdqe",
-        ColumnTable: "1Xhlw0FoPcOzvoWGFHY8IfhRE7cTbgDnQG61FlPiS",
-        DataTable  : "13ztaNl4luy2_tJa5Uqw3AESB1clGbaqZEzimTPqP",
-    },
-   "Example-2": {
-        PuzzleTable: "1KDIXO0KdrucA98E5hcD9RIbU4raphzRsERgVrLeY",
-        ColumnTable: "1xiDwcVEZQeWCXCGsrgLEECVefX6CQijYVPlHGb0_",
-        DataTable  : "1Wjj136RZ-J7nEtchlA4arozajQSGnQLp5TaMjw1K",
-    },
 }
-
-// data table: https://www.google.com/fusiontables/data?docid=1Wjj136RZ-J7nEtchlA4arozajQSGnQLp5TaMjw1K
 
 var PuzzleTableID = databaseHistory[currentDatabaseVersion].PuzzleTable;
 var ColumnTableID = databaseHistory[currentDatabaseVersion].ColumnTable;
