@@ -92,11 +92,12 @@ function drawSeqRuler() {
 // generate column <th> based on meta data; called once on init()
 function drawColHeaders(gaColumnSpecification) {
     var html_1 = "<tr>", html_2 = "<tr>";
+    var columnLabelIndex = gColumnsColumnIndex["Column_Label"];
     // for field names of two words, wrap it into two lines
     // for (var i = 0; i < n_fields; i++) {
     for (var i = 0; i < n_fields; i++) {
         var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
-        var col = gaColumnSpecification[iSpec][0];
+        var col = gaColumnSpecification[iSpec][columnLabelIndex];
         if (col.indexOf(" ") != -1 && col.toLowerCase() != "sequence") {
             html_1 += '<th class="th_def_' + i + '">' + col.substring(0, col.indexOf(" ")) + '</th>';
             html_2 += '<th>' + col.substring(col.indexOf(" ") + 1, col.length) + '</th>';
@@ -177,10 +178,12 @@ function initColClass() {
 
 // assign columnDefs of coloring and suffix etc.
 function initColRender() {
+    // TODO: Speed up cell rendering by factoring out what doesn't need to be recomputed for each cell.  Same for cell filtering 
     var obj = [];
     var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
     var suffixIndex = gColumnsColumnIndex["Siqi_sub_2"];
     var specialIndex = gColumnsColumnIndex["Siqi_sub_3"];
+    var usageIndex = gColumnsColumnIndex["Usage"];
     for (var i = 0; i < n_fields; i++) {
         var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
         var col_type = gaColumnSpecification[iSpec][dataTypeIndex];
@@ -342,7 +345,7 @@ function initTable() {
                                 "className": "green-button seq-button table-button"
                             },
                             {
-                                "text": "Display",
+                                "text": "Filters",
                                 "action": function ( e, dt, node, config ) {
                                     if (pageLayout.state.west.isClosed) {
                                         pageLayout.toggle("west");
@@ -669,6 +672,11 @@ function processQueryString( queryString ) {
                 $("#lab-title").html( "Exclusion 1" );
                 gOptions.lock = ["panel-left", "panel-right"];
                 break;
+              case "2": 
+                overrideQueryIDs( "Example-2" );  // Special database
+                $("#lab-title").html( "Exclusion 5" );
+                gOptions.lock = ["panel-left"];
+                break;
             }
         }
 
@@ -687,8 +695,7 @@ function processQueryString( queryString ) {
         }
 
         // special case for examples
-        if (gOptions.example && gOptions.example[0] == "1") {
-            // $(".dt-button").remove(); // This is too early; they haven't been created yet.
+        if (gOptions.example) { // !!! Check for implemented examples? // && gOptions.example[0] == "1") {
             fetchAllData( );
         }
  

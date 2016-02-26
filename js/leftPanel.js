@@ -166,6 +166,7 @@ function updateColSortTable2Opt() {
 // bind/rebind events for checkboxes and filter inputs
 // because on each order() event, they are cleared and recreated in DOM
 function bindOptBlockEvent() {
+    var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
     if (DEBUG) { console.log("bind-trigger"); }
 
     // event for check/uncheck columns

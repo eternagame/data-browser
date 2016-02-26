@@ -24,7 +24,6 @@ var databaseHistory = {
    "0.2": {
         PuzzleTable: "1KDIXO0KdrucA98E5hcD9RIbU4raphzRsERgVrLeY",
         ColumnTable: "1sTS1tFoo4SR7GbVY78-Ed5d8aWpSKPhU8mYFKPbB",
-        //DataTable  : "1J_u-JrvS0QNgVeqI95vapQOkPYEpInSh-KZ23W4p",
         DataTable  : "1WRLCkorduA-k8WZeUP5aDlHIfcXFprrXLh3LJH2M",
     },
    "Example-1": {
@@ -32,7 +31,14 @@ var databaseHistory = {
         ColumnTable: "1Xhlw0FoPcOzvoWGFHY8IfhRE7cTbgDnQG61FlPiS",
         DataTable  : "13ztaNl4luy2_tJa5Uqw3AESB1clGbaqZEzimTPqP",
     },
+   "Example-2": {
+        PuzzleTable: "1KDIXO0KdrucA98E5hcD9RIbU4raphzRsERgVrLeY",
+        ColumnTable: "1xiDwcVEZQeWCXCGsrgLEECVefX6CQijYVPlHGb0_",
+        DataTable  : "1Wjj136RZ-J7nEtchlA4arozajQSGnQLp5TaMjw1K",
+    },
 }
+
+// data table: https://www.google.com/fusiontables/data?docid=1Wjj136RZ-J7nEtchlA4arozajQSGnQLp5TaMjw1K
 
 var PuzzleTableID = databaseHistory[currentDatabaseVersion].PuzzleTable;
 var ColumnTableID = databaseHistory[currentDatabaseVersion].ColumnTable;
@@ -76,9 +82,17 @@ function getColumnQuery() {
     var legacyColunmnColumnNames = ["Column_Name", "Column_Label", "Siqi_sub_1", "Siqi_sub_2", "Siqi_sub_3", "Siqi_sub_4", "Sort_Order"];
 
     // Special canned examples
-    if (gOptions.example && gOptions.example[0] == 1) {
-        return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT " + legacyColunmnColumnNames.join(",") + " FROM " + ColumnTableID + 
-             " WHERE Ready = 'Y' AND Project_ID IN (5962968) ORDER BY Sort_Order ASC &key=" + APIkey;
+    if (gOptions.example) {
+        switch (gOptions.example[0]) {
+          case '1':
+            return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT " + legacyColunmnColumnNames.join(",") + " FROM " + ColumnTableID + 
+                 " WHERE Ready = 'Y' AND Project_ID IN (5962968) ORDER BY Sort_Order ASC &key=" + APIkey;
+          case '2':
+            return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT * FROM " + ColumnTableID + 
+                 " WHERE Ready = 'Y' AND Project_ID IN (5962968) ORDER BY Sort_Order ASC &key=" + APIkey;
+            //gProjectIDs = ["5962968"];
+            //break;
+        }
     }
 
     // Create the WHERE clause for column specifications, calculated from project IDs for selected puzzles
@@ -87,7 +101,8 @@ function getColumnQuery() {
         aRowSelection.push( p );
     }
 
-    return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT " + legacyColunmnColumnNames.join(",") + " FROM " + ColumnTableID + 
+    //return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT " + legacyColunmnColumnNames.join(",") + " FROM " + ColumnTableID + 
+    return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT * FROM " + ColumnTableID + 
              " WHERE Ready = 'Y' AND Project_ID IN (" + aRowSelection.join(",") + ") ORDER BY Sort_Order ASC &key=" + APIkey;
 }
 
@@ -148,13 +163,6 @@ var fakeColumnResponse = {
 //
 // compose query of selected puzzle_id as WHERE Puzzle_ID IN (xxx, yyy)
 function getDataQuery() {
-    // Create WHERE list from gaSelectedPuzzles array
-    var puzzle_ids = '';
-    for (var i = 0; i < gaSelectedPuzzles.length; i++) {
-        puzzle_ids += "%20%27" + gaSelectedPuzzles[i] + "%27%20,";
-    }
-    puzzle_ids = puzzle_ids.substring(0, puzzle_ids.length - 1);
-
     // create SELECT list from gaColumnsToDownload array
     var column_selection = "*";	// Not really a supported query, but occasionally useful for debugging
     if (gaColumnsToDownload.length > 0) {
@@ -166,13 +174,24 @@ function getDataQuery() {
     } else {
         column_selection = "*";
     }
-    // construct URL
 
-    // Special canned cases
-
-    if (gOptions.example && gOptions.example[0] == 1) {
-        return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT 'Design_Name','Design_ID','Designer_Name','Eterna_Score','Sequence' FROM "+ DataTableID + "&key=AIzaSyD6cZ6iB7D1amG_DQfRjvCCXSlEeZrPiGE";
+    // Special canned examples
+    if (gOptions.example) {
+        switch (gOptions.example) {
+          case '1':
+            return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT 'Design_Name','Design_ID','Designer_Name','Eterna_Score','Sequence' FROM "+ DataTableID + "&key=AIzaSyD6cZ6iB7D1amG_DQfRjvCCXSlEeZrPiGE";
+          case '2':
+            gaSelectedPuzzles = [5962966];
+            break;
+        }
     }
+
+    // Create WHERE list from gaSelectedPuzzles array
+    var puzzle_ids = '';
+    for (var i = 0; i < gaSelectedPuzzles.length; i++) {
+        puzzle_ids += "%20%27" + gaSelectedPuzzles[i] + "%27%20,";
+    }
+    puzzle_ids = puzzle_ids.substring(0, puzzle_ids.length - 1);
 
     var dataURL =  "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT " + column_selection + " FROM " + DataTableID + " WHERE 'Puzzle_ID' IN(" + puzzle_ids + ") &key=" + APIkey;
     return dataURL;
