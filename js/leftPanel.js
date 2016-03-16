@@ -7,10 +7,10 @@ function updateColSeleOpt2Table() {
     if (DEBUG) { console.log("sele, o->t"); }
     var new_sele = [];
     // use original order for assignment, tracked by "id" and "class" names
-    for (var i = 0; i < n_fields; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         new_sele.push($("#col-sort-chk-" + gaDownloadedColumns[i]).is(":checked"));
     }
-    for (var i = 0; i < n_fields; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         table.column(".td_def_" + i.toString()).visible(new_sele[i]);
     }
     updateColSortOpt2Table();
@@ -21,11 +21,11 @@ function updateColSeleTable2Opt() {
     if (DEBUG) { console.log("sele, t->o"); }
     var new_sele = [];
     // use original order for assignment, tracked by "id" and "class" names
-    for (var i = 0; i < n_fields; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         new_sele.push(table.column(".td_def_" + i.toString()).visible());
     }
 
-    for (var i = 0; i < n_fields; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         $("#col-sort-chk-" + gaDownloadedColumns[i]).prop("checked", new_sele[i]);
     }
 }
@@ -36,7 +36,7 @@ function updateColOrderOpt2Table() {
     if (DEBUG) { console.log("reorder, o->t"); }
 
     // Get the old ordering from the table itself, and compute the permutation vector
-    var old_order = table.colReorder.order(), reorder = new Array(n_fields);
+    var old_order = table.colReorder.order(), reorder = new Array(gaDownloadedColumns.length);
     if (DEBUG) { console.log("old table column order = " + old_order.join(",")); }
 
     // Assumption: the HTML has already changed, so compute the new table column ordering from it
@@ -44,7 +44,7 @@ function updateColOrderOpt2Table() {
     if (DEBUG) { console.log("new_name_order = " + new_name_order.join(",")); }
     if (DEBUG) { console.log(gDataColumnIndex); }
     var new_order = [];
-    for (var i = 0; i < n_fields; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         new_order[i] = gaDownloadedColumnIndex[new_name_order[i].replace("col-opt-", "")];
     }
     if (DEBUG) { console.log("requested new order = " + new_order.join(",")); }
@@ -52,7 +52,7 @@ function updateColOrderOpt2Table() {
     // Compute the reorder vector
     // colReorder.order() returns different ordering between GET and SET
     // GET is on base of "original", SET is on base of "current", need conversion
-    for (var i = 0; i < n_fields; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         reorder[i] = old_order.indexOf(new_order[i]);
     }
 
@@ -79,7 +79,7 @@ function updateColOrderTable2Opt() {
     // use original order for assignment, tracked by "id" and "class" names
     var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
     if ($("#col-opt-" + gaDownloadedColumns[new_order[i]]).length) {
-        for (var i = 0; i < n_fields; i++) {
+        for (var i = 0; i < gaDownloadedColumns.length; i++) {
             var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
             html += $("#col-opt-" + gaDownloadedColumns[new_order[i]])[0].outerHTML;
             // retain filter input val() for newly created DOM elements
@@ -97,7 +97,7 @@ function updateColOrderTable2Opt() {
 
     // restore filter inputs
     if (old_filter.length) {
-        for (var i = 0; i < n_fields; i++) {
+        for (var i = 0; i < gaDownloadedColumns.length; i++) {
             var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]]; //!!! filter IDs TBD
             if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
                 $("#col-filter-min-" + gaDownloadedColumns[i]).val(old_filter[i][0]);
@@ -245,7 +245,7 @@ function bindOptBlockEvent() {
 
         // store filters in local storage
         if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence) {
-            for (var i = 0; i < n_fields; i++) {
+            for (var i = 0; i < gaDownloadedColumns.length; i++) {
                 var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
                 if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
                     localStorage.setItem("col-filter-min-" + gaDownloadedColumns[i], parseFloat($("#col-filter-min-" + gaDownloadedColumns[i]).val()));
@@ -264,7 +264,7 @@ function drawColDisplayOptions(gaColumnSpecification) {
     if (pageLayout.state.west.isHidden) return;
     var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
     var html = "";
-    for (var i = 0; i < n_fields; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
         var columnName = gaDownloadedColumns[i];
         html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="col-opt-' + columnName + '">';
@@ -281,7 +281,7 @@ function drawColDisplayOptions(gaColumnSpecification) {
 
     // retrieve filters from local storage
     if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence) {
-        for (var i = 0; i < n_fields; i++) {
+        for (var i = 0; i < gaDownloadedColumns.length; i++) {
             var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
             if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
                 $("#col-filter-min-" + gaDownloadedColumns[i]).val(localStorage.getItem("col-filter-min-" + gaDownloadedColumns[i]));
@@ -360,7 +360,7 @@ function initColOpt() {
 /* Not sure what this was trying to protect against, but it causes more problems than it solves now (2/5/16)
             // see if any column is displayed before
             var flag = false;
-            for (var i = 0; i < n_fields; i++) {
+            for (var i = 0; i < gaDownloadedColumns.length; i++) {
                 if ($("#col-sort-chk-" + gaDownloadedColumns[i]).prop("checked")) {
                     flag = true;
                     break;
@@ -409,7 +409,7 @@ function initColOpt() {
 function build_filter_inputs_array () {
     filter_inputs = [];
     var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
-    for (var i = 0; i < n_fields; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
         if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
             // exclude disabled filters
@@ -530,12 +530,13 @@ function drawPuzzleSetOptions(gaPuzzles) {
     $("#puzzle-list").html(html);
 
     // retrieve filters from local storage
-    if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence) {
+    if (typeof(Storage) !== "undefined"  && !gOptions.noPersistence)  {
         for (var i = 0; i < gaPuzzles.length; i++) {
-            if (localStorage.getItem("lab-chk-" + gaPuzzles[i][puzzleIDIndex]) == "true") {
-                $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).trigger("click");
+            var selectionStr = "lab-chk-" + gaPuzzles[i][puzzleIDIndex];
+            if ((localStorage.getItem(selectionStr) == "true")  && !$("#" + selectionStr).is(":checked")){
+                $("#" + selectionStr).trigger("click");
                 // has to do this since events are not bind yet
-                $("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).parent(); // .addClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
+                //$("#" + selectionStr).parent(); // .addClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
                 gaSelectedPuzzles.push(gaPuzzles[i][puzzleIDIndex]);
             }
         }
@@ -566,15 +567,30 @@ function updateCenterTitle() {
     $("#lab-title").html( myPuzzleNames.join(", ") );
 }
 
+// build gProjectIDs object.  Needed as a precondition for constructing the column query
+function buildProjectIDs () {
+    var puzzleIDIndex = gPuzzleIndex['Puzzle_ID'];
+    var projectIDIndex = gPuzzleIndex['Project_ID'];
+    gProjectIDs = {};
+    for (var i = 0; i < gaPuzzles.length; i++) {
+        if ($("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).is(":checked"))
+            gProjectIDs[gaPuzzles[i][projectIDIndex]] = true;
+    }
+}
+
 // initiate left-panel puzzle selections
 function initPuzzleSelections() {
     var puzzleIDIndex = gPuzzleIndex['Puzzle_ID'];
+    var projectIDIndex = gPuzzleIndex['Project_ID'];
 
     drawPuzzleSetOptions(gaPuzzles);
 
-    updateCenterTitle();
+    // updateCenterTitle(); // Moved this up the call chain; need to work out the overall flow when the URL query string is controlling things.
 
-    // when puzzle selection changes
+    buildProjectIDs ();
+
+    // Add event handlers
+    // ... when puzzle selection is clicked
     $("[id^='lab-chk-']").on("click", function() {
         var id = $(this).attr("id");
         id = id.substring(id.lastIndexOf("-") + 1, id.length);
@@ -599,7 +615,7 @@ function initPuzzleSelections() {
 
     });
 
-    // auto show/hide project info on hover
+    // ... when mouse hovers, auto show/hide project info
     $("[id^='lab-sele-']").hover(function() {
         $(".column-title > label > span", this).show();
     }, function() {
@@ -608,18 +624,23 @@ function initPuzzleSelections() {
     });
     $("[id^='lab-sele-'] > .column-title > label > span").hide();
 
+    // ... when Select Columns button is pressed
     // refresh page based on new lab selection
     // new selection is saved in localStorage, upon refresh, it retrieves the info and save as gaSelectedPuzzles, then compose the data query
     $("#column-select-btn").on("click", function() {
         if (gaSelectedPuzzles.length) {
             gProjectIDs = {};
+/*
             for (var i = 0; i < gaPuzzles.length; i++) {
-                if ($("#lab-chk-" + gaPuzzles[i][3]).is(":checked"))
-                    gProjectIDs[gaPuzzles[i][0]] = true;
-            } 
+                if ($("#lab-chk-" + gaPuzzles[i][puzzleIDIndex]).is(":checked"))
+                    gProjectIDs[gaPuzzles[i][projectIDIndex]] = true;
+            }
+*/
+            buildProjectIDs ();
+ 
             fetchColumns( function() {
-		$(".ui-layout-center > h1").html('Now select one or more columns to download.<br><br>Then click on the "Load Data" button.');
-		$("#tab-panel-west-2").click();
+                $(".ui-layout-center > h1").html('Now select one or more columns to download.<br><br>Then click on the "Load Data" button.');
+                $("#tab-panel-west-2").click();
             });
         } else {
             alert("Select one or more puzzles before selecting columns");

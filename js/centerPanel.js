@@ -1,3 +1,19 @@
+/*
+withExceptionHandler= function ( F ) { 
+    try { 
+        F(); 
+    } catch (error) { 
+        alert( error );
+        alert ( new Error().stack );
+    }     
+}
+*/
+
+window.onError = function(message, source, lineno, colno, error) {
+    alert( message );
+    alert(  "...occurred on line " + lineno + " of " + source ); 
+}
+
 // global setTimeout timers to reduce event handling overlapping fire
 var timer_center_resize = 0;
 
@@ -32,6 +48,7 @@ function rowMetaDecorate() {
         });
     }
 
+/* (It's not clear how automatically generating percentages fits into the longer term plan)
     // calculate percentage for each group
     for (var i = 0; i < col_groups.length; i++) {
         // get members of group and sum
@@ -52,6 +69,7 @@ function rowMetaDecorate() {
             });
         });
     }
+*/
 }
 
 // draw sequence ruler in <th> every 5 residues; called once on init()
@@ -94,8 +112,8 @@ function drawColHeaders(gaColumnSpecification) {
     var html_1 = "<tr>", html_2 = "<tr>";
     var columnLabelIndex = gColumnsColumnIndex["Column_Label"];
     // for field names of two words, wrap it into two lines
-    // for (var i = 0; i < n_fields; i++) {
-    for (var i = 0; i < n_fields; i++) {
+    // for (var i = 0; i < gaDownloadedColumns.length; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
         var col = gaColumnSpecification[iSpec][columnLabelIndex];
         if (col.indexOf(" ") != -1 && col.toLowerCase() != "sequence") {
@@ -147,7 +165,7 @@ function initColClass() {
         var specialIndex = gColumnsColumnIndex["Siqi_sub_3"];
         var groupIndex = gColumnsColumnIndex["Siqi_sub_4"];
 
-        for (var i = 0; i < n_fields; i++) {
+        for (var i = 0; i < gaDownloadedColumns.length; i++) {
             var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
             var col_type = gaColumnSpecification[iSpec][dataTypeIndex];
             // internally reference columns as td_def_*, 0-indexed
@@ -184,7 +202,7 @@ function initColRender() {
     var suffixIndex = gColumnsColumnIndex["Siqi_sub_2"];
     var specialIndex = gColumnsColumnIndex["Siqi_sub_3"];
     var usageIndex = gColumnsColumnIndex["Usage"];
-    for (var i = 0; i < n_fields; i++) {
+    for (var i = 0; i < gaDownloadedColumns.length; i++) {
         var iSpec = gColumnsRowIndex[gaDownloadedColumns[i]];
         var col_type = gaColumnSpecification[iSpec][dataTypeIndex];
 
@@ -223,10 +241,15 @@ function initColRender() {
                         } else {
                             data = parseInt(data);
                         }
-                        // add suffix string in gray if exists
-                        var suffix = '';
-                        if (gaColumnSpecification[iSpec].length > suffixIndex && gaColumnSpecification[iSpec][suffixIndex].length) {
-                            suffix = ' <i style="color:#888;">' + gaColumnSpecification[iSpec][suffixIndex] + '</i>';
+                        // Display missing data as a blank, rather than NaN
+                        if (!data) {
+                            data = '';
+                        } else {
+                            // add suffix string in gray if exists
+                            var suffix = '';
+                            if (gaColumnSpecification[iSpec].length > suffixIndex && gaColumnSpecification[iSpec][suffixIndex].length) {
+                                suffix = ' <i style="color:#888;">' + gaColumnSpecification[iSpec][suffixIndex] + '</i>';
+                            }
                         }
                         return '<span class="td-num">' + data + suffix + '&nbsp;&nbsp;</span>';
                     } 
@@ -455,7 +478,8 @@ function fetchAllData( continuation )
 						"url": getDataQuery(),
 						"success": function(data) {
 							dataAjaxSuccess(data);
-							n_fields = gaColumnsToDownload.length; // n_fields should go away? !!!
+/* (Unless there's a big player demand, implement percentages as a calculated field, rather than storing them in the database)
+							gaDownloadedColumns.length = gaColumnsToDownload.length; 
 							// get group percentages in array
 							for (var i in Object.keys(gaColumnSpecification)) {
 							    if (gaColumnSpecification[i].length > 4 && gaColumnSpecification[i][4]) {
@@ -464,6 +488,7 @@ function fetchAllData( continuation )
 						        	}
 							    }
 							}
+*/
 							// init column options and headers according to query
 							drawColDisplayOptions(gaColumnSpecification);
 							drawColHeaders(gaColumnSpecification);
@@ -536,12 +561,13 @@ function fetchColumns( continuation ) {
 }
 
 function fetchData(  continuation ) {
+    $(".ui-layout-center > h1").html("Retrieving Data ...");
     $.ajax({
 	"dataType": "json",
 	"url": getDataQuery(),
 	"success": function(data) {
 	    dataAjaxSuccess(data);
-	    n_fields = gaColumnsToDownload.length; // n_fields should go away? !!!
+/* (It's not clear how automatically generating percentages fits into the longer term plan)
 	    // get group percentages in array
 	    for (var i in Object.keys(gaColumnSpecification)) {
 		if (gaColumnSpecification[i].length > 4 && gaColumnSpecification[i][4]) {
@@ -550,6 +576,7 @@ function fetchData(  continuation ) {
 	            }
 		}
 	    }
+*/
 	    // init column options and headers according to query
 	    drawColDisplayOptions(gaColumnSpecification);
 	    drawColHeaders(gaColumnSpecification);
@@ -589,10 +616,11 @@ function fetchData(  continuation ) {
 // Update gDataColumnIndex to match the column order of gTableData.  This is needed after re-ordering columns.
 function updateColumnTracking()
 {
-    for (i = 0; i < n_fields; i++) {
-	gDataColumnIndex[gTableData[i][columnNameIndex]] = i;
+    if (gTableData) {
+        for (i = 0; i < gaDownloadedColumns.length; i++) {
+            gDataColumnIndex[gTableData[i][columnNameIndex]] = i;
+        }
     }
-
 }
 
 // Specific columns for right-panel
@@ -607,6 +635,11 @@ function getColNums() {
         "score": gDataColumnIndex["Eterna_Score"],
         "flag": -1
     };
+}
+
+// default columns, either because we don't want to ask, or because there is no localStorage history.
+function defaultColumns() {
+    return ["Project_ID", "Project_Name", "Puzzle_ID", "Design_ID", "Design_Name", "Designer_Name", "Folding_Subscore", "Baseline_Subscore", "Switch_Subscore", "Eterna_Score", "Sequence"];
 }
 
 //--------------------------------------------------------------------
@@ -653,7 +686,7 @@ function processQueryString( queryString ) {
     console.log("iframe received '" + queryString + "'");
 
     // Remove the leading "queryString:" and/or "?", if present
-    queryString = queryString.replace(/^queryString:/,"").replace(/\?/,"");
+    queryString = queryString.replace(/^queryString:/,"").replace(/\?/,"").toLowerCase();
 
     if (queryString) {
         // Parse the options from the query string
@@ -685,10 +718,10 @@ function processQueryString( queryString ) {
             for (var t = 0; t < gOptions.lock.length; t++) {
                 switch (gOptions.lock[t]) {
                   case "panel-left":
-                    pageLayout.hide("west")
+                    pageLayout.hide("west");
                     break;
                   case "panel-right":
-                    pageLayout.hide("east")
+                    pageLayout.hide("east");
                     break;
                 }
             }
@@ -696,13 +729,56 @@ function processQueryString( queryString ) {
 
         // special case for examples
         if (gOptions.example) { // !!! Check for implemented examples? // && gOptions.example[0] == "1") {
-            fetchAllData( );
+            fetchAllData( function(){
+                updateCenterTitle();
+            });
         }
+
+        // See if particular puzzles were specified
+        if (gOptions.puzzle_id) {
+            var puzzles = decodeURIComponent(gOptions.puzzle_id).replace(/"/g, '').split(",");
+
+            // Bypass persistence to/from localStorage
+            gOptions.noPersistence = true;
+
+            // Update the table title
+            $("#lab-title").html( puzzles.join(", ") ); // refactor updateCenterTitle?
+   
+            // fetch the puzzle data,
+            fetchPuzzles( function() {                                                                      
+                // extract the project ID(s) for the specified puzzles and submit the column query
+                var puzzleIDIndex = gPuzzleIndex.Puzzle_ID;
+                var projectIDIndex = gPuzzleIndex.Project_ID;
+                for (var i = 0; i < gaPuzzles.length; i++) {
+                    if (puzzles.indexOf(gaPuzzles[i][puzzleIDIndex]) >= 0) {
+                        gProjectIDs[ gaPuzzles[i][projectIDIndex] ] = true;
+                    }
+                }
+                fetchColumns( function () {
+                    // Specify the desired puzzles and columns and submit the data query
+                    gaSelectedPuzzles = [puzzles];
+                    gaColumnsToDownload = defaultColumns();
+                    fetchData( function() {
+                        if (!pageLayout.state.west.isClosed) {
+                             pageLayout.toggle("west");
+                        }
+                    });
+
+                });
+            });
+            return;
+        }
+
  
-        // The exec option was for testing; its long-term role is uncertain
-        if (gOptions.exec && gOptions.exec == "fetchAllData") fetchAllData( function() {
+        // The exec option was for testing; its long-term role is uncertain, but currently exec == "fetchAllData" is being used when the table needs to be reinitialized. 
+        if (gOptions.exec && gOptions.exec == "fetchalldata") {
+            fetchAllData( function() {
+                updateCenterTitle();
                 $("#tab-panel-west-3").click(); // Open Display Control accordion
-        });
+                pageLayout.open("west");
+            });
+            return;
+        }
        
         // The Designer_Name option is used for limiting the download (or should it be the filter?) to one a specific player (or players)
         // Id enabled, it needs to be made more complete in terms of setting up left panel selections
@@ -710,17 +786,22 @@ function processQueryString( queryString ) {
             queryConstraints.Designer_Name = gOptions;    //!!! can't be right (?)  
         };       
     }
-    else {
-        console.log("No queryString received. Fetch the available puzzles and let the user take over.");
 
-	// Query for available puzzles, closing the loading dialog when done
-	fetchPuzzles( function () {
-	    $("#loading-dialog").dialog("close");
-	    $(".ui-layout-center > h1").html('Select one or more puzzles from the list on the left.<br><br>Then click on the "Select Columns" button.');
-	    // Open the left panel.  Nothing more will happen until the user takes action
-	    pageLayout.toggle("west");
-	});
+    // The query string hasn't diverted the flow of control.
+    if (!queryString) {
+        console.log( "No queryString received. Fetch the available puzzles and let the user take over." );
+    } else {
+        console.log( "The query string didn't divert control.  Was it malformed?" );
     }
+
+    // Query for available puzzles, closing the loading dialog when done
+    fetchPuzzles( function () {
+        $("#loading-dialog").dialog("close");
+        updateCenterTitle();
+        $(".ui-layout-center > h1").html('Select one or more puzzles from the list on the left.<br><br>Then click on the "Select Columns" button.');
+        // Open the left panel.  Nothing more will happen until the user takes action
+         pageLayout.toggle("west");
+    });
 }
 
 // Initiate the interaction with the player, based on the absence/presence/content of the query string.

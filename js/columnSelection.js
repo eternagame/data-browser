@@ -1,4 +1,4 @@
-    // --- Column selection ---------------
+// --- Column selection ---------------
 function fillColumns() {
     var columns = gaColumns.map ( function (item, index){ return item[1] })
 
@@ -23,10 +23,11 @@ function drawColumnSetOptions(gAvailableColumns) {
     // retrieve filters from local storage
     if (typeof(Storage) !== "undefined" && !gOptions.noPersistence) {
         for (var i = 0; i < gaColumns.length; i++) {
-            if (localStorage.getItem("col-choice-" + gaColumns[i][columnNameIndex]) == "true") {
-                $("#col-choice-" + gaColumns[i][columnNameIndex]).trigger("click");
+            var selectionStr = "col-choice-" + gaColumns[i][columnNameIndex];
+            if (localStorage.getItem( selectionStr ) == "true" && !$("#" + selectionStr).is(":checked")) {
+                $("#" + selectionStr).trigger("click");
                 // has to do this since events are not bind yet
-                $("#col-choice-" + gaColumns[i][columnNameIndex]).parent(); // .addClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
+                //$("#" + selectionStr]).parent().addClass("light-green-font"); // !!! Is color change helpful?  If so, needs more fg/bg contrast
                 gaColumnsToDownload.push(gaColumns[i][columnNameIndex]);
             }
         }
@@ -41,7 +42,7 @@ function drawColumnSetOptions(gAvailableColumns) {
 
 // initiate left-panel Column selections
 function initColumnSelections() {
-    var columnNameIndex = gColumnsColumnIndex['Column_Name']; // Switch to Column_Label?
+    var columnNameIndex = gColumnsColumnIndex['Column_Name']; // Switch to displaying Column_Label in UI?
     var columnLabelIndex = gColumnsColumnIndex['Column_Label'];
 
     drawColumnSetOptions(gAvailableColumns);
@@ -49,15 +50,18 @@ function initColumnSelections() {
     // when Column selection changes
     $("[id^='col-choice-']").on("click", function() {
         var id = $(this).attr("id");
-        id = id.substring(id.lastIndexOf("-") + 1, id.length);
+        var columnName = id.substring(id.lastIndexOf("-") + 1, id.length);
 
-        // render color change green/gray
+        // Add or remove column to/from gaColumnsToDownload
         if ($(this).is(":checked")) {
-            // $(this).parent().addClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
-            gaColumnsToDownload.push(id);
+            gaColumnsToDownload.push(columnName);
         } else {
-            // $(this).parent().removeClass("light-green-font"); // !!! Is color change helpful?  If so, need more fg/bg contrast
-            gaColumnsToDownload.splice(gaColumnsToDownload.indexOf(id), 1);
+            // Don't allow mandatory columns to be removed
+            if (columnName == "Project_ID" || columnName == "Design_ID") {
+                $(this).trigger("click");
+            } else {
+                gaColumnsToDownload.splice(columnName, 1);
+            }
         }
 
         // save to localStorage
@@ -80,6 +84,20 @@ function initColumnSelections() {
                 // Long term, it might be best to switch to the more modern "ajax" option; it seems to have the hooks we need.
                 // For the short term, we'll reload the page, with the query string option to go directly to loading the table.
                 location = location = location.pathname + "?exec=fetchAllData";
+/*
+                // Try this
+                //dataAjaxSuccess(data);
+                // init column options and headers according to query
+                drawColDisplayOptions(gaColumnSpecification);
+                drawColHeaders(gaColumnSpecification);
+                $(".ui-layout-center > h1").html("Loading Table...");
+
+                table.destroy();
+                tableNotLoaded = true;
+                fetchData( function() {
+                    $("#tab-panel-west-3").click(); // Open Display Control accordion
+                })
+*/
             }
         }
         else {

@@ -138,7 +138,7 @@
 <!--		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.min.js"></script> !!! temp; replaced with below for debugging        -->       <!-- ver 1.10.9 -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.js"></script>                       <!-- ver 1.10.10 -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.buttons.min.js"></script>           <!-- ver 1.0.3  -->
-		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.colReorder.min.js"></script>        <!-- ver 1.2.0  -->
+		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.colReorder.js"></script>        <!-- ver 1.2.0  -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.select.min.js"></script>            <!-- ver 1.0.1  -->
 		<script type="text/javascript" src="js/lib/dataTables/jquery.dataTables.scroller.min.js"></script>          <!-- ver 1.3.0  -->
 
@@ -184,9 +184,11 @@
 
 			var gaColumnsToDownload = [];
 			var gaColumnSpecification = [];  
-			var gAvailableColumns = [];   
-			col_groups = []; // Partially implemented? Siqi used for calculating percentages
+			var gAvailableColumns = [];
 
+/* (It's not clear how automatically generating percentages fits into the longer term plan)
+			col_groups = []; // Partially implemented? Siqi used for calculating percentages
+*/
 			var gProjectIDs = {}; // The projects encompassed by the selected puzzles
 
 			var gaPuzzles = [];

@@ -8,7 +8,7 @@ var DEBUG = true;
 function getStr1(idx) { return table.row(idx).data()[gDataColumnIndex["Structure_1"]]; }
 function getStr2(idx) { return table.row(idx).data()[gDataColumnIndex["Structure_2"]]; }
 
-var currentDatabaseVersion = "0.2"; // Defined globally; can be over-ridden by Example<N> cases 
+var currentDatabaseVersion = "0.3"; // Defined globally; can be over-ridden by Example<N> cases 
 
 var databaseHistory = {
    // Distinct databases set aside for each tutorial example.
@@ -44,6 +44,14 @@ var databaseHistory = {
         ColumnTable: "1sTS1tFoo4SR7GbVY78-Ed5d8aWpSKPhU8mYFKPbB",
         DataTable  : "1WRLCkorduA-k8WZeUP5aDlHIfcXFprrXLh3LJH2M",
     },
+   "0.3": {
+        //PuzzleTable: "13LupZGhLo9bij2znZNfWt-pd_ZrEIXD06MkXQzjR",
+        PuzzleTable: "1RzGzBMzkx2J2f3_hsmEhRxaLmB12485Ua0Bl3KKH",
+        //ColumnTable: "1bWr2sx-VxTkNLRcVj5T6rwGOOYTKu12GDpJ4ydWh",
+        ColumnTable: "1kVyUpWM7BViYKiAmiWf8VcpWjTQrP9ctNQ28iHXE",
+        //DataTable  : "1XP0nG7QmcqZYDHiKAdTXMIgyS2K53XKw2UfMMm2Z",
+        DataTable  : "1C2-BNH1IHlp-dg8R_iE1RAxZ9zvKVeJSCGwUWGfw",
+    },
 }
 
 var PuzzleTableID = databaseHistory[currentDatabaseVersion].PuzzleTable;
@@ -61,7 +69,7 @@ var APIkey = "AIzaSyD6cZ6iB7D1amG_DQfRjvCCXSlEeZrPiGE";
 // ------------ Puzzle specification -------------------
 //
 function getPuzzleQuery(){
-    return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT * FROM " + PuzzleTableID + " &key=" + APIkey;
+    return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT * FROM " + PuzzleTableID + " WHERE Ready = 'Y' &key=" + APIkey;
 }
 
 function normalizePuzzleResponse( data ) {
@@ -132,9 +140,15 @@ function normalizeColumnResponse( data ) {
     gAvailableColumns = [];
     var columnsColumnNameIndex = gColumnsColumnIndex["Column_Name"];
     for (i = 0; i < gaColumns.length; i++) {
-	gColumnsRowIndex[gaColumns[i][columnsColumnNameIndex]] = i;
-        gAvailableColumns[parseInt(i)] = gaColumns[i][0]; 
-        gaColumnSpecification[parseInt(i)] = gaColumns[i].slice( columnsColumnNameIndex ); // Discarding any columns prior to "Design_Name"
+        // We want just one of potentially many copies of the column specification
+        var columnName = gaColumns[i][columnsColumnNameIndex];
+        if (gColumnsRowIndex[columnName] === undefined) {
+            gColumnsRowIndex[columnName] = gAvailableColumns.length;
+            gAvailableColumns.push( columnName ); 
+            //gaColumnSpecification[parseInt(i)] = gaColumns[i].slice( columnsColumnNameIndex ); // Discarding any columns prior to "Column_Name";
+            gaColumnSpecification.push( gaColumns[i] );
+        }
+        
     }
    
 }
@@ -172,9 +186,13 @@ function getDataQuery() {
     // create SELECT list from gaColumnsToDownload array
     var column_selection = "*";	// Not really a supported query, but occasionally useful for debugging
     if (gaColumnsToDownload.length > 0) {
+        var hash = []
         var tmp = [];
-        for (var i = 0; i < gaColumnsToDownload.length; i++) {
-            tmp[i] = "'" + gaColumnsToDownload[i] + "'";
+        for (var i = 0; i < gaColumnsToDownload.length; i++) { 
+            if (!hash[gaColumnsToDownload[i]]) {
+               tmp.push( "'" + gaColumnsToDownload[i] + "'" );
+               hash[gaColumnsToDownload[i]] = true;
+            }
         }
         column_selection = tmp.join(",");
     } else {

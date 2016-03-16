@@ -49,10 +49,15 @@ function updateSele2SecStr(ids, col_num) {
 
 // update contents of right-panel histograms
 function updateSele2Hist(ids, col_num) {
+    var designIDIndex = gDataColumnIndex["Design_ID"]
+    var projectIDIndex = gPuzzleIndex["Project_ID"]
+    var templateIndex = gPuzzleIndex["Histogram_URL_Template"]
+    
     var html = '';
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
         html += fillDesignText(row, col_num);
+/*
         // get S3 image depending on whether row is gTableData
         if (row[col_num["flag"]] == "Yes" || col_num["flag"] == -1) {
             var round = row[col_num["round"]];
@@ -61,6 +66,16 @@ function updateSele2Hist(ids, col_num) {
         } else {
             html += '<p style="color:#000; background-color:#fff;"><i><u>Not gTableData. Switch data not available.</u></i></p></div>';
         }
+*/
+        //var puzzleID = row[gDataColumnIndex["Puzzle_ID"]];
+        //var template = gaPuzzles[gPuzzlesRowIndex[puzzleIF]][gPuzzlesColumnIndex["Histogram_URL_Template"]];
+        var projectID = row[gDataColumnIndex["Project_ID"]] 
+        var template;
+        gaPuzzles.map(function(value) {if (value[projectIDIndex] == projectID) template = value[templateIndex]})
+        //var template = 'https://s3.amazonaws.com/eterna/labs/histograms_R97/{Design_ID}.png'; // !!! temp
+        var designID = row[designIDIndex];
+        var URL = template.replace('{Design_ID}', designID)
+        html += '<img src=' + URL + ' width="100%" style="padding-bottom:10px;" alt="The switch graph is not available"/></div>';
     }
     $("#tab-panel-east-1").html(html);
 }
