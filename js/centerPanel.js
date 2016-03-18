@@ -186,8 +186,7 @@ function initColClass() {
 
             // format for numeric columns
             if (col_type == "int" || col_type == "float") {
-                obj.push({"className": class_name, "type": "num-filtered"});
-            } else {
+                obj.push({"className": class_name, "type": "num-filtered"});            } else {
                 obj.push({"className": class_name, "type": "string"});
             }            
 	}
@@ -241,12 +240,12 @@ function initColRender() {
                         } else {
                             data = parseInt(data);
                         }
-                        // Display missing data as a blank, rather than NaN
-                        if (!data) {
-                            data = '';
+                        var suffix = '';
+                        // Display missing numeric data as "N/A", rather than NaN
+                        if (data === 'NaN') {
+                            data = 'N/A   ';
                         } else {
-                            // add suffix string in gray if exists
-                            var suffix = '';
+                            // add suffix string in gray if it exists
                             if (gaColumnSpecification[iSpec].length > suffixIndex && gaColumnSpecification[iSpec][suffixIndex].length) {
                                 suffix = ' <i style="color:#888;">' + gaColumnSpecification[iSpec][suffixIndex] + '</i>';
                             }
@@ -473,6 +472,7 @@ function fetchAllData( continuation )
 				},
 				"complete": function() {
 					// Query for data in the selected puzzles/columns 
+                                        $(".ui-layout-center > h1").html("Retrieving Data ...");
 					$.ajax({
 						"dataType": "json",
 						"url": getDataQuery(),
@@ -741,8 +741,6 @@ function processQueryString( queryString ) {
             // Bypass persistence to/from localStorage
             gOptions.noPersistence = true;
 
-            // Update the table title
-            $("#lab-title").html( puzzles.join(", ") ); // refactor updateCenterTitle?
    
             // fetch the puzzle data,
             fetchPuzzles( function() {                                                                      
@@ -754,6 +752,16 @@ function processQueryString( queryString ) {
                         gProjectIDs[ gaPuzzles[i][projectIDIndex] ] = true;
                     }
                 }
+                // Update the table title
+                var puzzleNameIndex = gPuzzleIndex.Puzzle_Name;
+                var puzzleIDIndex = gPuzzleIndex.Puzzle_ID;
+                var aPuzzleNames = [];
+                gaPuzzles.map( function( value ) {
+                    if (puzzles.indexOf(value[puzzleIDIndex]) >= 0) {
+                        aPuzzleNames.push( value[puzzleNameIndex] );
+                    }
+                });
+                $("#lab-title").html( aPuzzleNames.join(", ") ); // refactor updateCenterTitle?
                 fetchColumns( function () {
                     // Specify the desired puzzles and columns and submit the data query
                     gaSelectedPuzzles = [puzzles];
@@ -800,7 +808,9 @@ function processQueryString( queryString ) {
         updateCenterTitle();
         $(".ui-layout-center > h1").html('Select one or more puzzles from the list on the left.<br><br>Then click on the "Select Columns" button.');
         // Open the left panel.  Nothing more will happen until the user takes action
-         pageLayout.toggle("west");
+        if(pageLayout.state.west.isClosed && !pageLayout.state.west.isHidden) {
+            pageLayout.toggle("west");
+        }
     });
 }
 
