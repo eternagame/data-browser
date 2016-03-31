@@ -30,11 +30,19 @@ function drawSecStr(row, col_num) {
 // update contents of right-panel 2D JS
 function updateSele2SecStr(ids, col_num) {
     var html = '';
+        //<iframe src="http://nando.eternadev.org/lab/2D_structure.html?designid=3398937&sequence=AUCGAUCG" style="width:100%; height:500px"></iframe>';
+
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
-        html += drawSecStr(row, col_num);
+        html += '<iframe src="http://nando.eternadev.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
+                '&sequence=' + row[gDataColumnIndex['Sequence']] + '&data_browser=true" style="width:100%; height:500px"></iframe>';
+// !!! temp work-around
+//        html += '<iframe src="http://nando.eternadev.org/lab/2D_structure.html?puzzleid=' + '3398937' +
+//                '&sequence=' + row[gDataColumnIndex['Sequence']] + '&data_browser=true" style="width:100%; height:500px"></iframe>';
+                    
     }
     $("#tab-panel-east-2").html(html);
+/*
     if (!iframe_flag) {
         for (var i = 0; i < ids.length; i++) {
             var row = table.row([ids[i]]).data();
@@ -45,6 +53,7 @@ function updateSele2SecStr(ids, col_num) {
                 renderRNA(row[col_num["sequence"]].trim(), getStr2(ids[i]),  document.getElementById("svg_container_1_" + row[col_num["id"]]));
         }
     }
+*/
 }
 
 // update contents of right-panel histograms
