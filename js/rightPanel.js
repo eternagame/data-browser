@@ -30,30 +30,15 @@ function drawSecStr(row, col_num) {
 // update contents of right-panel 2D JS
 function updateSele2SecStr(ids, col_num) {
     var html = '';
-        //<iframe src="http://nando.eternadev.org/lab/2D_structure.html?designid=3398937&sequence=AUCGAUCG" style="width:100%; height:500px"></iframe>';
 
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
+//        html += fillDesignText(row, col_num); // Leaves an open <div>!
         html += '<iframe src="http://nando.eternadev.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
                 '&sequence=' + row[gDataColumnIndex['Sequence']] + '&data_browser=true" style="width:100%; height:500px"></iframe>';
-// !!! temp work-around
-//        html += '<iframe src="http://nando.eternadev.org/lab/2D_structure.html?puzzleid=' + '3398937' +
-//                '&sequence=' + row[gDataColumnIndex['Sequence']] + '&data_browser=true" style="width:100%; height:500px"></iframe>';
-                    
+//        html += '</div>';
     }
-    $("#tab-panel-east-2").html(html);
-/*
-    if (!iframe_flag) {
-        for (var i = 0; i < ids.length; i++) {
-            var row = table.row([ids[i]]).data();
-            // using puzzle target SecStr instead of calculating on-the-fly
-            if (getStr1(ids[i]))
-                renderRNA(row[col_num["sequence"]].trim(), getStr1(ids[i]),  document.getElementById("svg_container_0_" + row[col_num["id"]])); 
-            if (getStr2(ids[i]))
-                renderRNA(row[col_num["sequence"]].trim(), getStr2(ids[i]),  document.getElementById("svg_container_1_" + row[col_num["id"]]));
-        }
-    }
-*/
+    $("#tab-panel-east-1").html(html);
 }
 
 // update contents of right-panel histograms
@@ -86,7 +71,7 @@ function updateSele2Hist(ids, col_num) {
         var URL = template.replace('{Design_ID}', designID)
         html += '<img src=' + URL + ' width="100%" style="padding-bottom:10px;" alt="The switch graph is not available"/></div>';
     }
-    $("#tab-panel-east-1").html(html);
+    $("#tab-panel-east-2").html(html);
 }
 
 // update contents of right-panel
@@ -123,6 +108,7 @@ function initStr2D() {
 
 // resize 2D JS Str when right-panel resize
 function resize2DStructure() {
+/*
     clearTimeout(timer_right_pane);
     timer_right_pane = setTimeout(function() {
         // adjust 2D js size, empirically
@@ -134,5 +120,6 @@ function resize2DStructure() {
         // redraw 2D
         syncSele2D();
     }, 200);
+*/
 }
 
