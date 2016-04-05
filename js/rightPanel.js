@@ -33,10 +33,9 @@ function updateSele2SecStr(ids, col_num) {
 
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
-//        html += fillDesignText(row, col_num); // Leaves an open <div>!
-        html += '<iframe src="http://nando.eternadev.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
-                '&sequence=' + row[gDataColumnIndex['Sequence']] + '&data_browser=true" style="width:100%; height:500px"></iframe>';
-//        html += '</div>';
+        html += '<iframe src="http://nando.eternadev.org/lab/Test_2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
+                '&sequence=' + row[gDataColumnIndex['Sequence']] + '&title=' + row[gDataColumnIndex['Design_Name']] +
+                '&data_browser=true" style="width:100%; height:500px"></iframe>';
     }
     $("#tab-panel-east-1").html(html);
 }
