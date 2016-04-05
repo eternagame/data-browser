@@ -35,7 +35,7 @@ function updateSele2SecStr(ids, col_num) {
         var row = table.row([ids[i]]).data();
         html += '<iframe src="http://nando.eternadev.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
                 '&sequence=' + row[gDataColumnIndex['Sequence']] + '&title=' + row[gDataColumnIndex['Design_Name']] +
-                '&data_browser=true" style="width:100%; height:500px"></iframe>';
+                '&data_browser=true" style="width:99%; height:500px"></iframe>';  // width=100% => horizontal scroll bars
     }
     $("#tab-panel-east-1").html(html);
 }
