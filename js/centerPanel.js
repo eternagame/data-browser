@@ -279,6 +279,7 @@ function initColRender() {
 }
 
 // main function for drawing the DataTable
+var _lastTableRowClickEventTimeStamp = 0; // Kludge.  See below.
 function initTable() {
     $("#center-table").DataTable({
         "data": gTableData,
@@ -407,6 +408,7 @@ function initTable() {
             drawBlockBorder();
             rowMetaDecorate();
             // work around for select trigger, re-route click events to 1st column
+
             $("td").on("click", function(e) {
                 if (!$(this).hasClass("td_def_0")) {
                     var td_0 = $(this).parent().find(".td_def_0");
@@ -416,6 +418,28 @@ function initTable() {
                     e.stopPropagation();
                 }
             })
+
+/* !!! Try this
+    $('#center-table tbody').on( 'click', 'tr', function (e) {
+        if (e.timeStamp  - _lastTableRowClickEventTimeStamp > 0.1) {	// !!! Kluge!  Suppress doubled events.  Why are they happening?
+            _lastTableRowClickEventTimeStamp = e.timeStamp;
+            alert( table.row($(this)[0]._DT_RowIndex).data()[gDataColumnIndex['Sequence']] );
+        }
+    });
+*/
+/* !!! Attempting to make selection work on first column as well as others.
+            $("td").on("click", function(e) {
+                var td_0 = $(this).parent().find(".td_def_0");
+                if ($(this).hasClass("td_def_0")) {
+                    td_0.trigger(e);
+                    e.stopPropagation();
+                }
+                else {
+                    // replacing the "target" is important!
+                    e["target"] = td_0[0];
+                }
+            })
+*/
         },
         // not used because it fires for each row, too frequent
         "rowCallback": function(row, data, dataIndex) {}

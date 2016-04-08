@@ -208,3 +208,17 @@ input:disabled {
 	height: auto !important;
 	overflow: hidden;
 }
+
+.context-menu-list {
+	font-size: 14px;
+	max-width: 400px;
+        z-index: 10  !important;
+}
+.context-menu-item {
+	background-color: #004;
+	max-width: 500;
+}
+.context-menu-item.hover {
+    background-color: #0d85b9;
+}
+
