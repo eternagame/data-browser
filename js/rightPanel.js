@@ -2,6 +2,9 @@
 var timer_right_pane = 0, timer_right_resize = 0;
 var sele_indexes = [];
 
+// Aspect ratio for 2D structure flash app frames = 3:2.  Note that an arbitrary aspect ratio may cause Chrome to require the user click to start the app.
+var _2dAspectRatio = 1.5;
+
 // text content (title, designer, etc.) for each row in right-panel
 function fillDesignText(row, col_num) {
     var html = '';
@@ -29,13 +32,13 @@ function drawSecStr(row, col_num) {
 
 // update contents of right-panel 2D JS
 function updateSele2SecStr(ids, col_num) {
+    var iframeHeight = $("#tabs-east").width() / _2dAspectRatio; // It's voodoo, but some aspect ratios cause Chrome to require the user to click to "play" the app.
     var html = '';
-
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
         html += '<iframe src="http://nando.eternadev.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
                 '&sequence=' + row[gDataColumnIndex['Sequence']] + '&title=' + row[gDataColumnIndex['Design_Name']] +
-                '&data_browser=true" style="width:99%; height:500px"></iframe>';  // width=100% => horizontal scroll bars
+                '&data_browser=true" style="width:99%; height:' + iframeHeight + 'px"></iframe>';  // width=100% => horizontal scroll bars
     }
     $("#tab-panel-east-1").html(html);
 }
@@ -107,18 +110,6 @@ function initStr2D() {
 
 // resize 2D JS Str when right-panel resize
 function resize2DStructure() {
-/*
-    clearTimeout(timer_right_pane);
-    timer_right_pane = setTimeout(function() {
-        // adjust 2D js size, empirically
-        var unit = Math.round($("#tabs-east").width() / 30);
-        NODE_R = Math.round(unit / 5);
-        PRIMARY_SPACE = Math.round(unit / 2);
-        PAIR_SPACE = Math.round(unit * 2 / 3);
-        CELL_PADDING = unit;
-        // redraw 2D
-        syncSele2D();
-    }, 200);
-*/
+    var iframeHeight = $("#tabs-east").width() / _2dAspectRatio;
+    $("#tabs-east iframe").height(iframeHeight);
 }
-
