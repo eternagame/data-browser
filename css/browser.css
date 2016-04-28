@@ -74,6 +74,15 @@ button			{ cursor:		pointer; }
 .nt-U { color: #77f;}
 .nt-N { color: #ccc;}
 
+.nt-selected {
+	background-color: #000000;
+	font-family: font-family:‘Times New Roman’, Times, serif;
+	font-style: italic;
+	font-weight: 300;
+	font-size: 95%;
+}
+
+
 /* auto expand/ellipse long text */
 .txt-hover {
 	white-space: nowrap;

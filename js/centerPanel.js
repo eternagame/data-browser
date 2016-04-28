@@ -193,9 +193,8 @@ function initColClass() {
 	return obj;
 }
 
-// assign columnDefs of coloring and suffix etc.
+// assign columnDefs of coloring and suffix etc.  This is called once when the table is initialized.
 function initColRender() {
-    // TODO: Speed up cell rendering by factoring out what doesn't need to be recomputed for each cell.  Same for cell filtering 
     var obj = [];
     var dataTypeIndex = gColumnsColumnIndex["Siqi_sub_1"];
     var suffixIndex = gColumnsColumnIndex["Siqi_sub_2"];
@@ -298,6 +297,21 @@ function initTable() {
             "loadingIndicator": true,
             "displayBuffer": 2,
         },
+// !!! Testing
+/*
+        "createdRow": function( row, data, dataIndex ) {
+            if ( data[4] == "A" ) {
+                $(row).addClass( 'important' );
+            }
+        },
+*/
+        "createdCell": function (td, cellData, rowData, row, col) {
+            alert();
+            if ( cellData < 1 ) {
+                $(td).css('color', 'red')
+            }
+        },
+// !!! end of testing
 
         "buttons": [], // add after initialization
         "columns": initColClass(),
@@ -852,3 +866,22 @@ $("body").layout({
     }
 });
 */
+
+// To support experimentation (from the debugger console) of alternate colors
+// From David Walsh blog: https://davidwalsh.name/add-rules-stylesheets
+var customCSS = (function() {
+	// Create the <style> tag
+	var style = document.createElement("style");
+
+	// Add a media (and/or media query) here if you'd like!
+	// style.setAttribute("media", "screen")
+	// style.setAttribute("media", "only screen and (max-width : 1024px)")
+
+	// WebKit hack :(
+	style.appendChild(document.createTextNode(""));
+
+	// Add the <style> element to the page
+	document.head.appendChild(style);
+
+	return style.sheet;
+})();
