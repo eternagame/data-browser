@@ -36,7 +36,7 @@ function updateSele2SecStr(ids, col_num) {
     var html = '';
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
-        html += '<iframe src="http://nando.eternadev.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
+        html += '<iframe src="http://staging.eternagame.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
                 '&sequence=' + row[gDataColumnIndex['Sequence']] + '&title=' + row[gDataColumnIndex['Design_Name']] +
                 '&data_browser=true" style="width:99%; height:' + iframeHeight + 'px"></iframe>';  // width=100% => horizontal scroll bars
     }
