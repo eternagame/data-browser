@@ -1,3 +1,12 @@
+/* demo_new.js 
+ *
+ * Copyright (C) 2015 Eterna Commons at Stanford University
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license.  See the LICENSE.md file for details.
+ */
+
 
 // use JS instead of flash <iframe> for 2D
 var iframe_flag = false;

@@ -1,3 +1,12 @@
+/* rightPanel.js 
+ 
+ * Copyright (C) 2015 Eterna Commons at Stanford University
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license.  See the LICENSE.md file for details.
+ */
+
 // global setTimeout timers to reduce event handling overlapping fire
 var timer_right_pane = 0, timer_right_resize = 0;
 var sele_indexes = [];

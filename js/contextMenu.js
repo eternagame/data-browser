@@ -1,3 +1,12 @@
+/* center contextMenu.js 
+ *
+ * Copyright (C) 2015 Eterna Commons at Stanford University
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license.  See the LICENSE.md file for details.
+ */
+
 
 // Copying arbitrary text to the clipboard involves hooking into the document.execCommand('copy') command.
 var bScriptedCopy = false;	// Don't let our scripted copy interfere with the browser's normal copy operation
