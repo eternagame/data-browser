@@ -7,4 +7,4 @@ The browser builds on the best parts of the legacy flash and Flash browsers.  In
 
 
 
-Design and implementation of initial release: Roger Wellington-Oguri (Omei) and Siqi Tian ( 
+Design and implementation of initial release: Roger Wellington-Oguri (Omei) and Siqi Tian (T47) 
