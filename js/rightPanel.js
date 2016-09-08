@@ -1,6 +1,18 @@
+/* rightPanel.js 
+ 
+ * Copyright (C) 2015 Eterna Commons at Stanford University
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license.  See the LICENSE.md file for details.
+ */
+
 // global setTimeout timers to reduce event handling overlapping fire
 var timer_right_pane = 0, timer_right_resize = 0;
 var sele_indexes = [];
+
+// Aspect ratio for 2D structure flash app frames = 3:2.  Note that an arbitrary aspect ratio may cause Chrome to require the user click to start the app.
+var _2dAspectRatio = 1.5;
 
 // text content (title, designer, etc.) for each row in right-panel
 function fillDesignText(row, col_num) {
@@ -29,30 +41,28 @@ function drawSecStr(row, col_num) {
 
 // update contents of right-panel 2D JS
 function updateSele2SecStr(ids, col_num) {
+    var iframeHeight = $("#tabs-east").width() / _2dAspectRatio; // It's voodoo, but some aspect ratios cause Chrome to require the user to click to "play" the app.
     var html = '';
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
-        html += drawSecStr(row, col_num);
+        html += '<iframe src="http://staging.eternagame.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
+                '&sequence=' + row[gDataColumnIndex['Sequence']] + '&title=' + row[gDataColumnIndex['Design_Name']] +
+                '&data_browser=true" style="width:99%; height:' + iframeHeight + 'px"></iframe>';  // width=100% => horizontal scroll bars
     }
-    $("#tab-panel-east-2").html(html);
-    if (!iframe_flag) {
-        for (var i = 0; i < ids.length; i++) {
-            var row = table.row([ids[i]]).data();
-            // using puzzle target SecStr instead of calculating on-the-fly
-            if (getStr1(ids[i]))
-                renderRNA(row[col_num["sequence"]].trim(), getStr1(ids[i]),  document.getElementById("svg_container_0_" + row[col_num["id"]])); 
-            if (getStr2(ids[i]))
-                renderRNA(row[col_num["sequence"]].trim(), getStr2(ids[i]),  document.getElementById("svg_container_1_" + row[col_num["id"]]));
-        }
-    }
+    $("#tab-panel-east-1").html(html);
 }
 
 // update contents of right-panel histograms
 function updateSele2Hist(ids, col_num) {
+    var designIDIndex = gDataColumnIndex["Design_ID"]
+    var projectIDIndex = gPuzzleIndex["Project_ID"]
+    var templateIndex = gPuzzleIndex["Histogram_URL_Template"]
+    
     var html = '';
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
         html += fillDesignText(row, col_num);
+/*
         // get S3 image depending on whether row is gTableData
         if (row[col_num["flag"]] == "Yes" || col_num["flag"] == -1) {
             var round = row[col_num["round"]];
@@ -61,8 +71,18 @@ function updateSele2Hist(ids, col_num) {
         } else {
             html += '<p style="color:#000; background-color:#fff;"><i><u>Not gTableData. Switch data not available.</u></i></p></div>';
         }
+*/
+        //var puzzleID = row[gDataColumnIndex["Puzzle_ID"]];
+        //var template = gaPuzzles[gPuzzlesRowIndex[puzzleIF]][gPuzzlesColumnIndex["Histogram_URL_Template"]];
+        var projectID = row[gDataColumnIndex["Project_ID"]] 
+        var template;
+        gaPuzzles.map(function(value) {if (value[projectIDIndex] == projectID) template = value[templateIndex]})
+        //var template = 'https://s3.amazonaws.com/eterna/labs/histograms_R97/{Design_ID}.png'; // !!! temp
+        var designID = row[designIDIndex];
+        var URL = template.replace('{Design_ID}', designID)
+        html += '<img src=' + URL + ' width="100%" style="padding-bottom:10px;" alt="The switch graph is not available"/></div>';
     }
-    $("#tab-panel-east-1").html(html);
+    $("#tab-panel-east-2").html(html);
 }
 
 // update contents of right-panel
@@ -99,16 +119,6 @@ function initStr2D() {
 
 // resize 2D JS Str when right-panel resize
 function resize2DStructure() {
-    clearTimeout(timer_right_pane);
-    timer_right_pane = setTimeout(function() {
-        // adjust 2D js size, empirically
-        var unit = Math.round($("#tabs-east").width() / 30);
-        NODE_R = Math.round(unit / 5);
-        PRIMARY_SPACE = Math.round(unit / 2);
-        PAIR_SPACE = Math.round(unit * 2 / 3);
-        CELL_PADDING = unit;
-        // redraw 2D
-        syncSele2D();
-    }, 200);
+    var iframeHeight = $("#tabs-east").width() / _2dAspectRatio;
+    $("#tabs-east iframe").height(iframeHeight);
 }
-

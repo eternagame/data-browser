@@ -1,3 +1,12 @@
+/* svg.js 
+ 
+ * Copyright (C) 2015 Eterna Commons at Stanford University
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license.  See the LICENSE.md file for details.
+ */
+
 /* Simple Testing/Usage Code:
  * var myObj = new SVG(document.getElementById("test"), 500, 500); // new object instance
  * myObj.line(0, 10, 50, 100, [180, 50, 10]);

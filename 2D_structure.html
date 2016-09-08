@@ -1,0 +1,60 @@
+<head>
+  <title>EteRNA - Played by Humans. Scored by Nature.</title>
+  <script>
+
+
+
+    function putTitle () {
+      var applet = document.getElementById('maingame');
+      try {
+        applet.set_design_title( options.title );
+      } catch (error) {
+        console.log( "retrying design_title" );
+        setTimeout( putTitle, 200 );
+        return;
+      }
+      console.log( "Flash parameters set" );
+    }
+
+    function putSequenceAndTitle () {
+      var applet = document.getElementById('maingame');
+      // If set_sequence_string  function doesn't exist yet, reschedule and exit
+      if (!applet || !applet.set_sequence_string ) {
+        setTimeout( putSequenceAndTitle, 200 );
+        console.log( "waiting for initialization to complete" )
+        return;
+      }
+
+      applet.set_sequence_string( options.sequence );
+      console.log( "Sequence set " );
+      putTitle();
+    }
+
+
+    // parse parameters
+    var options = {}
+    location.search.replace(/\?/,"").split("&").map( function(x){ 
+      var temp = x.split("="); if (temp.length >= 2) 
+      options[temp[0].trim().toLowerCase()] = decodeURIComponent( temp[1].trim() ); 
+    });
+  
+    //window.addEventListener("load", function(event) {
+    document.addEventListener("DOMContentLoaded", function(event) {
+      console.log("DOM fully loaded and parsed; Puzzlequery string is " + location.search.substr(1));
+      document.body.outerHTML = 
+        '<body style="height:200px width:300px padding:0px; margin:0px">  <embed id="maingame" src="http://staging.eternagame.org/eterna_resources/Eterna124.swf"' 
+        + 'width="100%" height="100%" type="application/x-shockwave-flash" cache="true" bgcolor="#061A34" flashvars="inputtype=PUZZLE&inputval='
+        + options.puzzleid
+        + '&username=&uid=0&databrowser=true&q=index.php" allowscriptaccess="always">';
+    
+      putSequenceAndTitle();
+
+    });
+  </script>
+</head>
+<!--
+    <body style="padding:0px; margin:0px"> 
+      <embed id="maingame" src="/eterna_resources/Eterna123.swf" width="100%" height="100%" type="application/x-shockwave-flash" cache="true" bgcolor="#061A34" flashvars="inputtype=PUZZLE&inputval=3398937&username=&uid=0&databrowser=true&q=index.php" allowscriptaccess="always">  
+-->    
+</body>
+
