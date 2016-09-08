@@ -1,3 +1,12 @@
+/* rightPanel.js 
+ 
+ * Copyright (C) 2015 Eterna Commons at Stanford University
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license.  See the LICENSE.md file for details.
+ */
+
 // global setTimeout timers to reduce event handling overlapping fire
 var timer_col_sort_o2t = 0, timer_col_sort_t2o = 0, timer_tab_sort = 0, timer_tab_reorder = 0, timer_col_filter_keyup = 0, timer_col_sort = 0;
 var filter_inputs = [];

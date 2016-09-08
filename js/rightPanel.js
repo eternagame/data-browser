@@ -1,3 +1,12 @@
+/* rightPanel.js 
+ 
+ * Copyright (C) 2015 Eterna Commons at Stanford University
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license.  See the LICENSE.md file for details.
+ */
+
 // global setTimeout timers to reduce event handling overlapping fire
 var timer_right_pane = 0, timer_right_resize = 0;
 var sele_indexes = [];
@@ -36,7 +45,7 @@ function updateSele2SecStr(ids, col_num) {
     var html = '';
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
-        html += '<iframe src="http://nando.eternadev.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
+        html += '<iframe src="http://staging.eternagame.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
                 '&sequence=' + row[gDataColumnIndex['Sequence']] + '&title=' + row[gDataColumnIndex['Design_Name']] +
                 '&data_browser=true" style="width:99%; height:' + iframeHeight + 'px"></iframe>';  // width=100% => horizontal scroll bars
     }
