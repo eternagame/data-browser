@@ -45,9 +45,16 @@ function updateSele2SecStr(ids, col_num) {
     var html = '';
     for (var i = 0; i < ids.length; i++) {
         var row = table.row([ids[i]]).data();
+        // Change to use copyandview URL to take advantage of pre-computed folding
+        // Omiting the domain doesn't woek well for testing on the dev server, because it lacks an up-to-date Eterna database
+        html += '<iframe src="http://eternagame.org/game/solution/' + row[gDataColumnIndex['Puzzle_ID']] + '/'  + row[gDataColumnIndex['Design_ID']] +
+                '/copyandview/?databrowser=true" style="width:99%; height:' + iframeHeight + 'px"></iframe>';  // width=100% => horizontal scroll bars
+
+/*
         html += '<iframe src="http://staging.eternagame.org/lab/2D_structure.html?puzzleid=' + row[gDataColumnIndex['Puzzle_ID']] +
                 '&sequence=' + row[gDataColumnIndex['Sequence']] + '&title=' + row[gDataColumnIndex['Design_Name']] +
                 '&data_browser=true" style="width:99%; height:' + iframeHeight + 'px"></iframe>';  // width=100% => horizontal scroll bars
+*/
     }
     $("#tab-panel-east-1").html(html);
 }
