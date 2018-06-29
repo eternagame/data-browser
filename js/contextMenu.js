@@ -43,7 +43,7 @@ $.contextMenu({
             name: "Copy URL to clipboard",
             callback: function(key, opt){
                 var aRowData = table.row($(this)[0]._DT_RowIndex).data()
-                clipboardText = 'http://www.eternagame.org/game/solution/' + 
+                clipboardText = 'https://eternagame.org/game/solution/' + 
                     aRowData[gDataColumnIndex['Puzzle_ID']] + '/' +  
                     aRowData[gDataColumnIndex['Design_ID']] + 
                     '/copyandview/';                                          
