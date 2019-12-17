@@ -17,71 +17,16 @@ var DEBUG = true;
 function getStr1(idx) { return table.row(idx).data()[gDataColumnIndex["Structure_1"]]; }
 function getStr2(idx) { return table.row(idx).data()[gDataColumnIndex["Structure_2"]]; }
 
-var currentDatabaseVersion = "0.3"; // Defined globally; can be over-ridden by Example<N> cases 
-
-var databaseHistory = {
-   // Distinct databases set aside for each tutorial example.
-   // These are isolated from the main fusion tables so the structure of the main branch development code and database can continue to evolve
-   // without breaking the examples.
-   // At some point, the database API will become stable enough that the examples can be run off the main tables and these special case databases can be retired.
-
-   "Example-1": {
-        PuzzleTable: "1HlluHXYCN4mSbFykGRJzmb5U7VTqOjMlKS6VuPgo",
-        ColumnTable: "1Xhlw0FoPcOzvoWGFHY8IfhRE7cTbgDnQG61FlPiS",
-        DataTable  : "13ztaNl4luy2_tJa5Uqw3AESB1clGbaqZEzimTPqP",
-    },
-   "Example-2": {
-        PuzzleTable: "1KDIXO0KdrucA98E5hcD9RIbU4raphzRsERgVrLeY",
-        ColumnTable: "1xiDwcVEZQeWCXCGsrgLEECVefX6CQijYVPlHGb0_",
-        DataTable  : "1Wjj136RZ-J7nEtchlA4arozajQSGnQLp5TaMjw1K",
-    },
-
-    "0.0": {
-        PuzzleTable: "1U8t1qye2beaSl70XMTDHYoDznRWeopnOt1eoJy4T",
-        ColumnTable: "16Ue5edl-AkRXyxlsTw9BC1ZRNakrgR6f5GEos75L",
-        DataTable  : "1kMFbEh1W-Q0GyY2CCJP1lxSWZpuspjdqDUzHMKAJ",
-    },
-
-   // These are the main-line development fusion tables
-   "0.1": {
-        PuzzleTable: "1saGl4liryIYKdt8_O8cwe2s8ZxIJf2uoropV-qTT",
-        ColumnTable: "1r-yR0zOOY-ukaiVHsh7njXDCsNu2MesE_d148RLV",
-        DataTable  : "1kMFbEh1W-Q0GyY2CCJP1lxSWZpuspjdqDUzHMKAJ",
-    },
-   "0.2": {
-        PuzzleTable: "1KDIXO0KdrucA98E5hcD9RIbU4raphzRsERgVrLeY",
-        ColumnTable: "1sTS1tFoo4SR7GbVY78-Ed5d8aWpSKPhU8mYFKPbB",
-        DataTable  : "1WRLCkorduA-k8WZeUP5aDlHIfcXFprrXLh3LJH2M",
-    },
-   "0.3": {
-        //PuzzleTable: "13LupZGhLo9bij2znZNfWt-pd_ZrEIXD06MkXQzjR",
-        PuzzleTable: "1RzGzBMzkx2J2f3_hsmEhRxaLmB12485Ua0Bl3KKH",
-        //ColumnTable: "1bWr2sx-VxTkNLRcVj5T6rwGOOYTKu12GDpJ4ydWh",
-        ColumnTable: "1kVyUpWM7BViYKiAmiWf8VcpWjTQrP9ctNQ28iHXE",
-        //DataTable  : "1XP0nG7QmcqZYDHiKAdTXMIgyS2K53XKw2UfMMm2Z",
-        DataTable  : "1C2-BNH1IHlp-dg8R_iE1RAxZ9zvKVeJSCGwUWGfw",
-    },
-}
-
-var PuzzleTableID = databaseHistory[currentDatabaseVersion].PuzzleTable;
-var ColumnTableID = databaseHistory[currentDatabaseVersion].ColumnTable;
-var DataTableID   = databaseHistory[currentDatabaseVersion].DataTable;
-
-function overrideQueryIDs( version ) {
-    PuzzleTableID = databaseHistory[version].PuzzleTable;
-    ColumnTableID = databaseHistory[version].ColumnTable;
-    DataTableID   = databaseHistory[version].DataTable;
-}
-
-var APIkey = "AIzaSyD6cZ6iB7D1amG_DQfRjvCCXSlEeZrPiGE";
+var server_base = ['localhost', '127.0.0.1'].includes(location.hostname) ? 'https://eternagame.org' : '';
 
 // ------------ Puzzle specification -------------------
 //
 function getPuzzleQuery(){
-    return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT * FROM " + PuzzleTableID + " WHERE Ready = 'Y' &key=" + APIkey;
+    return server_base + "/get/?type=data_browser_puzzles";
 }
 
 function normalizePuzzleResponse( data ) {
+    data = data["data"];
     gaPuzzles = data["rows"];
     var temp = data["columns"];
     for (i = 0; i < temp.length; i++) {
@@ -108,11 +53,9 @@ function getColumnQuery() {
     if (gOptions.example) {
         switch (gOptions.example[0]) {
           case '1':
-            return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT " + legacyColunmnColumnNames.join(",") + " FROM " + ColumnTableID + 
-                 " WHERE Ready = 'Y' AND Project_ID IN (5962968) ORDER BY Sort_Order ASC &key=" + APIkey;
+            return server_base + "/get/?type=data_browser_columns&columns=" + legacyColunmnColumnNames.join(",") + "&project_ids=5962968"
           case '2':
-            return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT * FROM " + ColumnTableID + 
-                 " WHERE Ready = 'Y' AND Project_ID IN (5962968) ORDER BY Sort_Order ASC &key=" + APIkey;
+            return server_base + "/get/?type=data_browser_columns&project_ids=5962968"
             //gProjectIDs = ["5962968"];
             //break;
         }
@@ -124,14 +67,12 @@ function getColumnQuery() {
         aRowSelection.push( p );
     }
 
-    //return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT " + legacyColunmnColumnNames.join(",") + " FROM " + ColumnTableID + 
-    return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT * FROM " + ColumnTableID + 
-             " WHERE Ready = 'Y' AND Project_ID IN (" + aRowSelection.join(",") + ") ORDER BY Sort_Order ASC &key=" + APIkey;
+    return server_base + "/get/?type=data_browser_columns&project_ids=" + aRowSelection.join(",");
 }
 
 
 function normalizeColumnResponse( data ) {
-    // convert fusion table results to internal data structures
+    data = data['data'];
 
     // Index the column names field
     gColumnsRowIndex = {};
@@ -195,42 +136,27 @@ function getDataQuery() {
     // create SELECT list from gaColumnsToDownload array
     var column_selection = "*";	// Not really a supported query, but occasionally useful for debugging
     if (gaColumnsToDownload.length > 0) {
-        var hash = []
-        var tmp = [];
-        for (var i = 0; i < gaColumnsToDownload.length; i++) { 
-            if (!hash[gaColumnsToDownload[i]]) {
-               tmp.push( "'" + gaColumnsToDownload[i] + "'" );
-               hash[gaColumnsToDownload[i]] = true;
-            }
-        }
-        column_selection = tmp.join(",");
-    } else {
-        column_selection = "*";
+        column_selection = gaColumnsToDownload.join(",");
     }
 
     // Special canned examples
     if (gOptions.example) {
         switch (gOptions.example) {
           case '1':
-            return "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT 'Design_Name','Design_ID','Designer_Name','Eterna_Score','Sequence' FROM "+ DataTableID + "&key=AIzaSyD6cZ6iB7D1amG_DQfRjvCCXSlEeZrPiGE";
+              // TODO: Original example Fusion table didn't have IDs. What should this do?
+            return server_base + "/get/?type=data_browser_data&columns=Design_Name,Design_ID,Designer_Name,Eterna_Score,Sequence";
           case '2':
             gaSelectedPuzzles = [5962966];
             break;
         }
     }
 
-    // Create WHERE list from gaSelectedPuzzles array
-    var puzzle_ids = '';
-    for (var i = 0; i < gaSelectedPuzzles.length; i++) {
-        puzzle_ids += "%20%27" + gaSelectedPuzzles[i] + "%27%20,";
-    }
-    puzzle_ids = puzzle_ids.substring(0, puzzle_ids.length - 1);
-
-    var dataURL =  "https://www.googleapis.com/fusiontables/v2/query?sql=SELECT " + column_selection + " FROM " + DataTableID + " WHERE 'Puzzle_ID' IN(" + puzzle_ids + ") &key=" + APIkey;
-    return dataURL;
+    return server_base + "/get/?type=data_browser_data&columns=" + column_selection + "&puzzle_ids=" + gaSelectedPuzzles.join(',');
 }
 
 function dataAjaxSuccess(data) {
+    data = data['data'];
+
     gTableData = data['rows'];
     //$("#lab-title").html(data['kind']);
     gaDownloadedColumns = data['columns'];

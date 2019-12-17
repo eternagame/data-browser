@@ -250,11 +250,11 @@ function initColRender() {
                         }
                         var suffix = '';
                         // Display missing numeric data as "N/A", rather than NaN
-                        if (data === 'NaN') {
+                        if (data === 'NaN' || isNaN(data)) {
                             data = 'N/A   ';
                         } else {
                             // add suffix string in gray if it exists
-                            if (gaColumnSpecification[iSpec].length > suffixIndex && gaColumnSpecification[iSpec][suffixIndex].length) {
+                            if (gaColumnSpecification[iSpec].length > suffixIndex && gaColumnSpecification[iSpec][suffixIndex] && gaColumnSpecification[iSpec][suffixIndex].length) {
                                 suffix = ' <i style="color:#888;">' + gaColumnSpecification[iSpec][suffixIndex] + '</i>';
                             }
                         }
@@ -272,7 +272,7 @@ function initColRender() {
                         idx = table.colReorder.order()[idx];
                         var iSpec = gColumnsRowIndex[gaDownloadedColumns[idx]];
                         var suffix = '';
-                        if (gaColumnSpecification[iSpec].length > suffixIndex && gaColumnSpecification[iSpec][suffixIndex].length) {
+                        if (gaColumnSpecification[iSpec].length > suffixIndex && gaColumnSpecification[iSpec][suffixIndex] && gaColumnSpecification[iSpec][suffixIndex].length) {
                             suffix = ' <i style="color:#888;">' + gaColumnSpecification[iSpec][suffixIndex] + '</i>';
                         }
                         // truncate text and enable expand-when-hover, controlled by CSS
@@ -742,23 +742,6 @@ function processQueryString( queryString ) {
             var temp = x.split("="); 
             gOptions[temp[0].trim()] = temp[1].trim() 
         });
-
-        // options now has a property for each option set by the query string
-        if (gOptions.example) {
-            gOptions.noPersistence = true;    // Bypass persistence to/from localStorage
-            switch (gOptions.example[0]) {
-              case "1": 
-                overrideQueryIDs( "Example-1" );  // Special database
-                $("#lab-title").html( "Exclusion 1" );
-                gOptions.lock = ["panel-left", "panel-right"];
-                break;
-              case "2": 
-                overrideQueryIDs( "Example-2" );  // Special database
-                $("#lab-title").html( "Exclusion 5" );
-                gOptions.lock = ["panel-left"];
-                break;
-            }
-        }
 
         // Check for locking of capabilities
         if (gOptions.lock) {

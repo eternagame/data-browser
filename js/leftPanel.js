@@ -278,7 +278,7 @@ function drawColDisplayOptions(gaColumnSpecification) {
         var columnName = gaDownloadedColumns[i];
         html += '<li class="clickable gray-button centered rounded-5 type-of-displayed-info" id="col-opt-' + columnName + '">';
         html += '<div class="gray-button-bg"></div>';
-        html += '<div class="column-title"><label><input type="checkbox" id="col-sort-chk-' + columnName +'" class="col-sort-chk"/>' + gaColumnSpecification[iSpec][0] + '</label><span style="float:right;">';
+        html += '<div class="column-title"><label><input type="checkbox" id="col-sort-chk-' + columnName +'" class="col-sort-chk"/>' + gaColumnSpecification[iSpec][gColumnsColumnIndex["Column_Label"]] + '</label><span style="float:right;">';
         if (gaColumnSpecification[iSpec][dataTypeIndex] == "int" || gaColumnSpecification[iSpec][dataTypeIndex] == "float") {
             html += '<input id="col-filter-min-' + gaDownloadedColumns[i] + '" type="number" placeholder="min" class="col-filter-num">&nbsp;&nbsp;<input id="col-filter-max-' + gaDownloadedColumns[i] + '" type="number" placeholder="max" class="col-filter-num"/>';
         } else {
